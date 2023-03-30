@@ -4,6 +4,8 @@ const ContatoColaboradorSchema = new mongoose.Schema({
     telefone: { type: Array, required: true },
     endereco: String,
     id_colaborador: { type: String, required: true },
+    criado_em: {type: Date, require: true, default: new Date()},
+    atualizado_em: {type: Date, require: true, default: new Date()}
 });
 
 const ContatoColaborador = mongoose.model('ContatoColaborador', ContatoColaboradorSchema);

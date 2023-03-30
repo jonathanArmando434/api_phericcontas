@@ -3,8 +3,7 @@ const Localizacao = require("../models/LocalizacaoModel");
 exports.create = async (req, res) => {
     const { endereco, isPrincipal, id_cliente } = req.body
 
-    const localizacao = { endereco, isPrincipal, id_cliente }
-    console.log(localizacao)
+    const localizacao = { endereco, isPrincipal, id_cliente, criado_em: new Date() }
 
     try {
         await Localizacao.create(localizacao)
@@ -47,17 +46,19 @@ exports.update = async (req, res) => {
 
     const { endereco, isPrincipal, id_cliente } = req.body
 
-    const localizacao = { endereco, isPrincipal, id_cliente }
-
     try {
-        const updateLocalizacao = await Localizacao.updateOne({ _id: id }, localizacao)
+        const localizacao = await Localizacao.findOne({ _id: id })
 
-        if (updateLocalizacao.matchedCount === 0) {
+        if (!localizacao) {
             res.status(422).json({ message: 'Localização não encontrado!' })
             return
         }
 
-        res.status(200).json(localizacao)
+        const newLocalizacao = { endereco, isPrincipal, id_cliente, criado_em: localizacao.criado_em }
+
+        Localizacao.updateOne({ _id: id }, newLocalizacao)
+
+        res.status(200).json(newLocalizacao)
     } catch (error) {
         res.status(500).json({ erro: error })
     }

@@ -3,7 +3,7 @@ const router = express.Router();
 const upload = require("../config/colaboradorMulter");
 const Colaborador = require("../controllers/ColaboradorController");
 
-router.post('/', upload.single("file"), colaborador.createColaborador)
+router.post('/', upload.single("file"), Colaborador.create)
 
 router.get('/', Colaborador.findAll)
 

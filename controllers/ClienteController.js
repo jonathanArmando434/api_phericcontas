@@ -1,11 +1,11 @@
 const Cliente = require("../models/ClienteModel");
 
 exports.create = async (req, res) => {
-    const { nif, nome, data_de_criacao, area_de_negocio } = req.body
+    const { nif, nome, area_negocio } = req.body
 
-    const file = req.file;
+    const file = req.file || '';
 
-    const cliente = { nif, nome, data_de_criacao, area_de_negocio, picture: file.path }
+    const cliente = { nif, nome, area_de_negocio, foto_url: file.path, criado_em: new Date() }
 
     try {
         await Cliente.create(cliente)
@@ -46,7 +46,7 @@ exports.findOne = async (req, res) => {
 exports.update = async (req, res) => {
     const id = req.params.id
 
-    const { nif, nome, data_de_criacao, area_de_negocio } = req.body
+    const { nif, nome, area_negocio } = req.body
 
     try {
         const cliente = await Cliente.findOne({ _id: id })
@@ -56,7 +56,7 @@ exports.update = async (req, res) => {
             return
         }
 
-        const newCliente = { nif, nome, data_de_criacao, area_de_negocio, picture: cliente.picture }
+        const newCliente = { nif, nome, area_negocio, foto_url: cliente.foto_url, criado_em: cliente.criado_em }
 
         const updateCliente = await Cliente.updateOne({ _id: id }, newCliente)
 

@@ -1,23 +1,82 @@
 const fs = require('fs')
 const Colaborador = require("../models/ColaboradorModel");
 
+const colaboradorExist = async (num_bi) => {
+    let result = await Colaborador.findOne({ num_bi: num_bi })
+    if (result) {
+        return true
+    }
+    return false
+}
+
+const removeSamevalue = (array) => {
+    array.forEach((value, index) => {
+        for (let i = index + 1; i < array.length; i++)
+            if (array[i] === value) array[i] = ''
+    })
+
+    return array
+}
+
+const removeValueEmpty = (array) => {
+    array = removeSamevalue(array)
+    const aux = array.filter(value => value !== '')
+    console.log(aux)
+    return aux
+}
+
 exports.create = async (req, res) => {
-    const { bi, nome, data_nascimento, genero, idioma } = req.body
+    const { nome, num_bi, data_nasc, genero, num_iban, cargo, idioma } = req.body
 
-    const file = req.file;
+    if (!nome) {
+        res.status(422).json({ message: 'O nome é obrigatório1' })
+        return
+    }
+    if (!num_bi) {
+        res.status(422).json({ message: 'O numero de BI é obrigatório!' })
+        return
+    }
+    if (!data_nasc) {
+        res.status(422).json({ message: 'A data de nascimento é obrigatória!' })
+        return
+    }
+    if (!genero) {
+        res.status(422).json({ message: 'O género é obrigatório1' })
+        return
+    }
+    if (!cargo) {
+        res.status(422).json({ message: 'O cargo é obrigatório1' })
+        return
+    }
+    if (!num_iban) {
+        res.status(422).json({ message: 'O numero de IBAN é obrigatório!' })
+        return
+    }
 
-    const idiomaArray = []
-    idioma.push(idioma)
-
-    const birthDate = new Date(data_nascimento)
-
-    const colaborador = { bi, nome, data_nascimento: birthDate, genero, idioma: idiomaArray, picture: file.path }
+    const exist = await colaboradorExist(num_bi)
+    if (exist) {
+        res.status(406).json({ message: 'Este número de BI já foi usado!' })
+        return
+    }
 
     try {
-        await Colaborador.create(colaborador)
-        res.status(201).json({ message: 'Colaborador inserida no sistema com sucesso!' })
+        const file = req.file || '';
+
+        console.log(req)
+
+        const birthDate = new Date(data_nasc)
+
+        const auxIdioma = removeValueEmpty(idioma)
+
+        const colaborador = { nome, num_bi, num_iban, data_nasc: birthDate, genero, foto_url: file.path, cargo, idioma: auxIdioma }
+
+        const result = await Colaborador.create(colaborador)
+        res.status(201).json({ message: 'Colaborador inserido no sistema com sucesso!', result })
+        return
     } catch (error) {
-        res.status.json({ erro: error })
+        console.log(error)
+        res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })
+        return
     }
 }
 
@@ -51,7 +110,7 @@ exports.findOne = async (req, res) => {
 exports.update = async (req, res) => {
     const id = req.params.id
 
-    const { bi, nome, data_nascimento, genero, idioma } = req.body
+    const { num_bi, nome, data_nasc, genero, num_iban, cargo, idioma } = req.body
 
     try {
         const colaborador = await Colaborador.findOne({ _id: id })
@@ -64,15 +123,19 @@ exports.update = async (req, res) => {
         colaborador.idioma.push(idioma)
         const idiomaArray = [...colaborador.idioma]
 
-        const birthDate = new Date(data_nascimento)
+        const birthDate = new Date(data_nasc)
 
-        const newColaborador = { bi, nome, data_nascimento: birthDate, genero, idioma: idiomaArray, picture: colaborador.picture }
+        const criado_em = colaborador.criado_em
+
+        const foto_url = colaborador.foto_url
+
+        const newColaborador = { nome, num_bi, num_iban, data_nasc: birthDate, genero, foto_url, cargo, idioma: idiomaArray, criado_em }
 
         const updateColaborador = await Colaborador.updateOne({ _id: id }, newColaborador)
 
         res.status(200).json(updateColaborador)
     } catch (error) {
-        res.status(500).json({ erro: error })
+        res.status(500).json({ error })
     }
 }
 
@@ -86,7 +149,7 @@ exports.remove = async (req, res) => {
         return
     }
 
-    if (colaborador.picture) fs.unlinkSync(colaborador.picture);
+    if (colaborador.foto_url) fs.unlinkSync(colaborador.foto_url);
 
     try {
         await Colaborador.deleteOne({ _id: id })

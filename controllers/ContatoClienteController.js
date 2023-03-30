@@ -3,7 +3,9 @@ const ContatoCliente = require("../models/ContatoClienteModel");
 exports.create = async (req, res) => {
     const { telefone, email, id_cliente } = req.body
     
-    const contatoCliente = { telefone, email, id_cliente }
+    const phone = [telefone]
+    
+    const contatoCliente = { telefone: phone, email, id_cliente, criado_em: new Date() }
 
     try {
         await ContatoCliente.create(contatoCliente)
@@ -45,16 +47,20 @@ exports.update = async (req, res) => {
     const id = req.params.id
 
     const { telefone, email, id_cliente } = req.body
-    
-    const contatoCliente = { telefone, email, id_cliente }
 
     try {
-        const updateContatoCliente = await ContatoCliente.updateOne({ _id: id }, contatoCliente)
+        const contato = await ContatoCliente.findOne({ _id: id })
 
-        if (updateContatoCliente.matchedCount === 0) {       
-            res.status(422).json({ message: 'Conta bancária não encontrado!' })
+        if (!contato) {
+            res.status(422).json({ message: 'Contato não encontrado!' })
             return
         }
+
+        const phone = [...contato.telefone, telefone]
+
+        const contatoCliente = { telefone: phone, email, id_cliente, criado_em: contato.criado_em }
+
+        const updateContatoCliente = await ContatoCliente.updateOne({ _id: id }, contatoCliente)
 
         res.status(200).json(contatoCliente)
     } catch (error) {

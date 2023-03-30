@@ -3,9 +3,10 @@ const mongoose = require('mongoose');
 const ClienteSchema = new mongoose.Schema({
     nif: { type: String, required: true },
     nome: { type: String, required: true },
-    data_de_criacao: { type: Date, required: true },
-    area_de_negocio: {type: String, required: true},
-    picture: String
+    area_negocio: {type: String, required: true},
+    foto_url: String,
+    criado_em: {type: Date, require: true},
+    atualizado_em: {type: Date, require: true, default: new Date()}
 });
 
 const Cliente = mongoose.model('Cliente', ClienteSchema);

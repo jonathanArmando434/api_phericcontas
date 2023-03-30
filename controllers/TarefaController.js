@@ -1,9 +1,9 @@
 const Tarefa = require("../models/TarefaModel");
 
 exports.create = async (req, res) => {
-    const { servico, data_de_inicio, data_de_finalizacao, status, valor, id_cliente, id_responsavel } = req.body
+    const { servico, data_de_inicio, data_limite, data_de_finalizacao, valor, id_cliente, id_responsavel } = req.body
 
-    const tarefa = { servico, data_de_inicio, data_de_finalizacao, status, valor, id_cliente, id_responsavel }
+    const tarefa = { servico, data_de_inicio, data_limite, data_de_finalizacao, valor, id_cliente, id_responsavel, criado_em: new Date() }
 
     try {
         await Tarefa.create(tarefa)
@@ -44,20 +44,21 @@ exports.findOne = async (req, res) => {
 exports.update = async (req, res) => {
     const id = req.params.id
 
-    const { servico, data_de_inicio, data_de_finalizacao, status, valor, id_cliente, id_rsponsavel } = req.body
-
-    const tarefa = { servico, data_de_inicio, data_de_finalizacao, status, valor, id_cliente, id_rsponsavel }
-
+    const { servico, data_de_inicio, data_limite, data_de_finalizacao, valor, id_cliente, id_rsponsavel } = req.body
 
     try {
-        const updateTarefa = await Tarefa.updateOne({ _id: id }, tarefa)
+        const tarefa = await Tarefa.findOne({ _id: id })
 
-        if (updateTarefa.matchedCount === 0) {       
+        if (!tarefa) {
             res.status(422).json({ message: 'Tarefa não encontrado!' })
             return
         }
 
-        res.status(200).json(tarefa)
+        const newTarefa = { servico, data_de_inicio, data_limite, data_de_finalizacao, valor, id_cliente, id_rsponsavel, criado_em: tarefa.criado_em }
+
+        Tarefa.updateOne({ _id: id }, newTarefa)
+
+        res.status(200).json(newTarefa)
     } catch (error) {
         res.status(500).json({ erro: error })
     }
