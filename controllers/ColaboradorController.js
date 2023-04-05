@@ -21,7 +21,6 @@ const removeSamevalue = (array) => {
 const removeValueEmpty = (array) => {
     array = removeSamevalue(array)
     const aux = array.filter(value => value !== '')
-    console.log(aux)
     return aux
 }
 
@@ -86,7 +85,8 @@ exports.findAll = async (req, res) => {
 
         res.status(200).json(colaborador)
     } catch (error) {
-        res.satus(500).json({ erro: error })
+        console.log(error)
+        res.satus(500).json({ message: 'Não é possível apresentar os colaboadores!' })
     }
 }
 
@@ -103,14 +103,15 @@ exports.findOne = async (req, res) => {
 
         res.status(200).json(colaborador)
     } catch (error) {
-        res.status(500).json({ erro: error })
+        console.log(error)
+        res.status(500).json({ message: 'Houve um erro no servidor!' })
     }
 }
 
 exports.update = async (req, res) => {
     const id = req.params.id
 
-    const { num_bi, nome, data_nasc, genero, num_iban, cargo, idioma } = req.body
+    const { nome, num_iban, cargo, idioma } = req.body
 
     try {
         const colaborador = await Colaborador.findOne({ _id: id })
@@ -120,22 +121,18 @@ exports.update = async (req, res) => {
             return
         }
 
-        colaborador.idioma.push(idioma)
-        const idiomaArray = [...colaborador.idioma]
+        const atualizado_em = new Date()
 
-        const birthDate = new Date(data_nasc)
+        const auxIdioma = removeValueEmpty(idioma)
 
-        const criado_em = colaborador.criado_em
-
-        const foto_url = colaborador.foto_url
-
-        const newColaborador = { nome, num_bi, num_iban, data_nasc: birthDate, genero, foto_url, cargo, idioma: idiomaArray, criado_em }
+        const newColaborador = { nome, num_iban, cargo, idioma: auxIdioma, atualizado_em }
 
         const updateColaborador = await Colaborador.updateOne({ _id: id }, newColaborador)
 
-        res.status(200).json(updateColaborador)
+        res.status(200).json({message: 'Colaborador atualizado com sucesso!', result: {...updateColaborador, _id: colaborador._id}})
     } catch (error) {
-        res.status(500).json({ error })
+        console.log(error)
+        res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })
     }
 }
 

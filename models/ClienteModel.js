@@ -5,7 +5,7 @@ const ClienteSchema = new mongoose.Schema({
     nome: { type: String, required: true },
     area_negocio: {type: String, required: true},
     foto_url: String,
-    criado_em: {type: Date, require: true},
+    criado_em: {type: Date, require: true, default: new Date()},
     atualizado_em: {type: Date, require: true, default: new Date()}
 });
 

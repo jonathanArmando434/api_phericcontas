@@ -17,7 +17,6 @@ const verifyIdColaborador = async (id_colaborador) => {
 const removeEmptyValue = (array) => {
     array = removeSamevalue(array)
     const aux = array.filter(value => value !== '')
-    console.log(aux)
     return aux
 }
 
@@ -77,7 +76,8 @@ exports.findAll = async (req, res) => {
 
         res.status(200).json(contatoColaborador)
     } catch (error) {
-        res.status(500).json({ erro: error })
+        console.log(error)
+        res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })
     }
 }
 
@@ -85,41 +85,63 @@ exports.findOne = async (req, res) => {
     const id = req.params.id
 
     try {
-        const contatoColaborador = await ContatoColaborador.findOne({ _id: id })
+        let contatoColaborador = await ContatoColaborador.findOne({ _id: id })
 
         if (!contatoColaborador) {
-            res.status(422).json({ message: 'Contato do colaborador não encontrado!' })
-            return
+            contatoColaborador = await ContatoColaborador.findOne({ id_colaborador: id })
+            if (!contatoColaborador) {
+                res.status(422).json({ message: 'Contato do colaborador não encontrado!' })
+                return
+            }
         }
 
         res.status(200).json(contatoColaborador)
     } catch (error) {
-        res.status(500).json({ erro: error })
+        consolelog(error)
+        res.status(500).json({ message: 'Houve um erro no servidor!' })
     }
 }
 
 exports.update = async (req, res) => {
     const id = req.params.id
 
-    const { telefone, endereco, id_colaborador } = req.body
+    const { telefone, endereco } = req.body
+
+    let isPrimary = true
 
     try {
-        const contato = await ContatoColaborador.findOne({ _id: id })
+        let contato = await ContatoColaborador.findOne({ _id: id })
 
         if (!contato) {
-            res.status(422).json({ message: 'Contato não encontrado!' })
-            return
+            contato = await ContatoColaborador.findOne({ id_colaborador: id })
+            if (!contato) {
+                res.status(422).json({ message: 'Contato não encontrado!' })
+                return
+            }
+            else isPrimary = false
         }
 
-        const phone = [...contato.telefone, telefone]
 
-        const contatoColaborador = { telefone: phone, endereco, id_colaborador, criado_em: contato.criado_em }
+        const auxTelefone = removeEmptyValue(telefone)
 
-        const updateContatoColaborador = await ContatoColaborador.updateOne({ _id: id }, contatoColaborador)
+        const atualizado_em = new Date()
 
-        res.status(200).json(contatoColaborador)
+        const contatoColaborador = { telefone: auxTelefone, endereco, atualizado_em }
+
+        let updateContatoColaborador
+        if (isPrimary) updateContatoColaborador = await ContatoColaborador.updateOne({ _id: id }, contatoColaborador)
+        else updateContatoColaborador = await ContatoColaborador.updateOne({ id_colaborador: id }, contatoColaborador)
+
+        res.status(200).json({
+            message: 'Contato do colaborador atualizado com sucesso!',
+            result: {
+                ...updateContatoColaborador,
+                _id: contato._id
+            }
+        })
     } catch (error) {
-        res.status(500).json({ erro: error })
+        console.log(error)
+        res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })
     }
 }
 
@@ -138,6 +160,7 @@ exports.remove = async (req, res) => {
 
         res.status(200).json({ message: 'Contato do colaborador removido com sucesso!' })
     } catch (error) {
-        res.status(500).json({ erro: error })
+        console.log(error)
+        res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })
     }
 }

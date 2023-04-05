@@ -80,7 +80,6 @@ exports.findOne = async (req, res) => {
 
         if (!contrato) {
             contrato = await Contrato.findOne({ id_associado: id })
-
             if (!contrato) {
                 res.status(422).json({ message: 'Contrato não encontrado!' })
                 return
@@ -89,6 +88,7 @@ exports.findOne = async (req, res) => {
 
         res.status(200).json(contrato)
     } catch (error) {
+        console.log(error)
         res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })
     }
 }
@@ -96,24 +96,37 @@ exports.findOne = async (req, res) => {
 exports.update = async (req, res) => {
     const id = req.params.id
 
-    const { data_inicio, data_fim, id_associado } = req.body
+    const { data_inicio, data_fim, status } = req.body
+
+    let isPrimary = true
 
     try {
-        const contrato = await Contrato.findOne({ _id: id })
+        let contrato = await Contrato.findOne({ _id: id })
 
         if (!contrato) {
-            res.status(422).json({ message: 'Contrato não encontrado!' })
-            return
+            contrato = await Contrato.findOne({ id_associado: id })
+            if (!contrato) {
+                res.status(422).json({ message: 'Contrato não encontrado!' })
+                return
+            }
+            else isPrimary = false
         }
 
         const startDate = new Date(data_inicio)
         const endDate = new Date(data_fim)
+        const atualizado_em = new Date()
 
-        const newContrato = { data_inicio: startDate, data_fim: endDate, id_associado, criado_em: contrato.criado_em }
+        const newContrato = { data_inicio: startDate, data_fim: endDate, status, atualizado_em }
+        console.log(newContrato)
 
-        res.status(200).json(nwContrato)
+        let updateContrato
+        if(isPrimary) updateContrato = await Contrato.updateOne({ _id: id }, newContrato)
+        else updateContrato = await Contrato.updateOne({ id_associado: id }, newContrato)
+
+        res.status(200).json({message: 'Contrato atualizado com sucesso!', result: {...updateContrato, _id: contrato._id}})
     } catch (error) {
-        res.status(500).json({ erro: error })
+        console.log(error)
+        res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })
     }
 }
 
@@ -132,6 +145,7 @@ exports.remove = async (req, res) => {
 
         res.status(200).json({ message: 'Contrato removido com sucesso!' })
     } catch (error) {
-        res.status(500).json({ erro: error })
+        console.log(error)
+        res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })
     }
 }

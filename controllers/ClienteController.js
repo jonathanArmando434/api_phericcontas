@@ -1,18 +1,48 @@
 const Cliente = require("../models/ClienteModel");
 
+const ExistClient = async (nif) => {
+    let result = await Cliente.findOne({ nif: nif })
+    if (result) {
+        return true
+    }
+    return false
+}
+
 exports.create = async (req, res) => {
     const { nif, nome, area_negocio } = req.body
 
     const file = req.file || '';
 
-    const cliente = { nif, nome, area_de_negocio, foto_url: file.path, criado_em: new Date() }
+    if (!nif) {
+        res.status(422).json({ message: 'O NIF é obrigatório!' })
+        return
+    }
+
+    if (!nome) {
+        res.status(422).json({ message: 'O nome é obrigatório!' })
+        return
+    }
+
+    if (!area_negocio) {
+        res.status(422).json({ message: 'A área de negócio é obrigatório1' })
+        return
+    }
+
+    const exist = await ExistClient(nif)
+    if (exist) {
+        res.status(406).json({ message: 'Este NIF já foi usado!' })
+        return
+    }
+
+    const cliente = { nif, nome, area_negocio, foto_url: file.path }
 
     try {
-        await Cliente.create(cliente)
+        const result = await Cliente.create(cliente)
 
-        res.status(201).json({ message: 'Cliente inserida no sistema com sucesso!' })
+        res.status(201).json({ message: 'Cliente inserido no sistema com sucesso!', result })
     } catch (error) {
-        res.status(500).json({ erro: error })
+        console.log(error)
+        res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })
     }
 }
 
@@ -22,7 +52,8 @@ exports.findAll = async (req, res) => {
 
         res.status(200).json(cliente)
     } catch (error) {
-        res.status(500).json({ erro: error })
+        console.log(error)
+        res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })
     }
 }
 
@@ -39,14 +70,15 @@ exports.findOne = async (req, res) => {
 
         res.status(200).json(cliente)
     } catch (error) {
-        res.status(500).json({ erro: error })
+        console.log(error)
+        res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })
     }
 }
 
 exports.update = async (req, res) => {
     const id = req.params.id
 
-    const { nif, nome, area_negocio } = req.body
+    const { nome, area_negocio } = req.body
 
     try {
         const cliente = await Cliente.findOne({ _id: id })
@@ -56,13 +88,14 @@ exports.update = async (req, res) => {
             return
         }
 
-        const newCliente = { nif, nome, area_negocio, foto_url: cliente.foto_url, criado_em: cliente.criado_em }
+        const newCliente = { nome, area_negocio, atualizado_em: new Date() }
 
         const updateCliente = await Cliente.updateOne({ _id: id }, newCliente)
 
-        res.status(200).json(newCliente)
+        res.status(200).json({message: 'Cliente atualizado com sucesso!', result: {...updateCliente, _id: cliente._id}})
     } catch (error) {
-        res.status(500).json({ erro: error })
+        console.log(error)
+        res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })
     }
 }
 
@@ -76,13 +109,14 @@ exports.remove = async (req, res) => {
         return
     }
 
-    if (cliente.picture) fs.unlinkSync(cliente.picture);
+    if (cliente.foto_url) fs.unlinkSync(cliente.foto_url);
 
     try {
         await Cliente.deleteOne({ _id: id })
 
         res.status(200).json({ message: 'Cliente removido com sucesso!' })
     } catch (error) {
-        res.status(500).json({ erro: error })
+        console.log(error)
+        res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })
     }
 }
