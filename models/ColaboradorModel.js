@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 
 const ColaboradorSchema = new mongoose.Schema({
-    nome: { type: String, required: true },
-    num_bi: { type: String, required: true },
+    nome: { type: String, require: true },
+    num_bi: { type: String, require: true },
     num_iban: {type: String, require: true},
-    data_nasc: { type: Date, required: true },
-    genero: { type: String, required: true },
+    data_nasc: { type: Date, require: true },
+    genero: { type: String, require: true },
     foto_url: String,
     cargo: {type: String, require: true},
     idioma: Array,

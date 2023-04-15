@@ -1,14 +1,15 @@
 const validator = require("email-validator");
 const ContatoCliente = require("../models/ContatoClienteModel");
+const Cliente = require('../models/ClienteModel')
 
 const contatoExist = async (id_cliente) => {
-    const result = await ContatoColaborador.findOne({ id_cliente: id_cliente })
+    const result = await ContatoCliente.findOne({ id_cliente: id_cliente })
     if (result) return true
     return false
 }
 
 const verifyIdClient = async (id_cliente) => {
-    const result = await Colaborador.findById(id_cliente)
+    const result = await Cliente.findById(id_cliente)
     if (result) return true
     return false
 }

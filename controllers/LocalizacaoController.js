@@ -1,5 +1,5 @@
 const Localizacao = require("../models/LocalizacaoModel");
-const Cliente = require('./ClienteController')
+const Cliente = require('../models/ClienteModel')
 
 const verifyIdCliente = async (id_cliente) => {
     const result = await Cliente.findById(id_cliente)
@@ -15,7 +15,7 @@ exports.create = async (req, res) => {
         return
     }
 
-    if (!isPrincipal) {
+    if (typeof isPrincipal !== 'boolean') {
         res.status(422).json({
             message: 'É preciso um boleano dizendo se o endereço é o principal ou não!'
         })
@@ -56,15 +56,18 @@ exports.findAll = async (req, res) => {
     }
 }
 
-exports.findOne = async (req, res) => {
+exports.findMany = async (req, res) => {
     const id = req.params.id
 
     try {
-        const localizacao = await Localizacao.findOne({ _id: id })
+        let localizacao = await Localizacao.findMany({ _id: id })
 
         if (!localizacao) {
-            res.status(422).json({ message: 'Localização não encontrado!' })
-            return
+            localizacao = await Localizacao.findMany({id_cliente: ids})
+            if (!localizacao) {
+                res.status(422).json({ message: 'Localização não encontrado!' })
+                return
+            }
         }
 
         res.status(200).json(localizacao)
@@ -80,16 +83,24 @@ exports.update = async (req, res) => {
     const { endereco, isPrincipal, id_cliente } = req.body
 
     try {
-        const localizacao = await Localizacao.findOne({ _id: id })
+        let localizacao = await Localizacao.findOne({ _id: id })
+
+        let isPrincipal = true
 
         if (!localizacao) {
-            res.status(422).json({ message: 'Localização não encontrado!' })
-            return
+            localizacao = await Localizacao.findOne({ id_cliente: id })
+            if (!localizacao) {
+                res.status(422).json({ message: 'Localização não encontrado!' })
+                return
+            }
+            isPrincipal = false
         }
 
         const newLocalizacao = { endereco, isPrincipal, atualizado_em: new Date() }
 
-        const updated = Localizacao.updateOne({ _id: id }, newLocalizacao)
+        let updated
+        if (isPrincipal) updated = await Localizacao.updateOne({ _id: id }, newLocalizacao)
+        else updated = await Localizacao.updateOne({ id_cliente: id }, newLocalizacao)
 
         res.status(200).json({ message: 'Localização atualizada com sucesso!', result: { ...updated, _id: localizacao._id } })
     } catch (error) {

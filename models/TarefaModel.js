@@ -1,13 +1,14 @@
 const mongoose = require('mongoose');
 
 const TarefaSchema = new mongoose.Schema({
-    servico: { type: String, required: true },
-    data_inicio: { type: Date, required: true },
-    data_limite: { type: Date, required: true },
-    data_fim: { type: Date, required: true },
-    valor: {type: Number, requiredd: true},
-    id_cliente: { type: String, required: true },
-    id_responsavel: { type: String, required: true },
+    servico: { type: String, require: true },
+    data_inicio: { type: Date, require: true, default: new Date() },
+    data_limite: { type: Date, require: true },
+    data_fim: Date,
+    valor: {type: Number, require: true},
+    status: {type: Boolean, require: true, default: true},
+    id_cliente: { type: String, require: true },
+    id_responsavel: { type: String, require: true },
     criado_em: {type: Date, require: true},
     atualizado_em: {type: Date, require: true, default: new Date()}
 })

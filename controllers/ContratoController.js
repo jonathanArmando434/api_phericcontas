@@ -51,9 +51,9 @@ exports.create = async (req, res) => {
 
         const contrato = { data_inicio: startDate, data_fim: endDate, id_associado }
 
-        await Contrato.create(contrato)
+        const result = await Contrato.create(contrato)
 
-        res.status(201).json({ message: 'Contrato inserido no sistema com sucesso!' })
+        res.status(201).json({ message: 'Contrato inserido no sistema com sucesso!', result })
         return
     } catch (error) {
         console.log(error)
@@ -116,7 +116,7 @@ exports.update = async (req, res) => {
         const endDate = new Date(data_fim)
         const atualizado_em = new Date()
 
-        const newContrato = { data_inicio: startDate, data_fim: endDate, status, atualizado_em }
+        const newContrato = { _id: contrato._id, data_inicio: startDate, data_fim: endDate, status, atualizado_em }
         console.log(newContrato)
 
         let updateContrato

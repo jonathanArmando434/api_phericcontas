@@ -8,6 +8,8 @@ router.get('/', Tarefa.findAll)
 
 router.get('/:id', Tarefa.findOne)
 
+router.get('/all/:id', Tarefa.findMany)
+
 router.patch('/:id', Tarefa.update)
 
 router.delete('/:id', Tarefa.remove)

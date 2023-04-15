@@ -125,7 +125,7 @@ exports.update = async (req, res) => {
 
         const auxIdioma = removeValueEmpty(idioma)
 
-        const newColaborador = { nome, num_iban, cargo, idioma: auxIdioma, atualizado_em }
+        const newColaborador = { _id: colaborador._id, nome, num_iban, cargo, idioma: auxIdioma, atualizado_em }
 
         const updateColaborador = await Colaborador.updateOne({ _id: id }, newColaborador)
 

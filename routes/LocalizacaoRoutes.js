@@ -6,7 +6,7 @@ router.post('/', Localizacao.create)
 
 router.get('/', Localizacao.findAll)
 
-router.get('/:id', Localizacao.findOne)
+router.get('/:id', Localizacao.findMany)
 
 router.patch('/:id', Localizacao.update)
 
