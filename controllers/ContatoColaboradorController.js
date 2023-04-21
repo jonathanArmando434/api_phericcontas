@@ -57,7 +57,7 @@ exports.create = async (req, res) => {
     }
 
     try {
-        const contatoColaborador = { telefone: auxTelefone, endereco, id_colaborador }
+        const contatoColaborador = { telefone, endereco, id_colaborador }
 
         const result = await ContatoColaborador.create(contatoColaborador)
 

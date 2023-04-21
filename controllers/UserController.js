@@ -134,11 +134,14 @@ exports.findOne = async (req, res) => {
     const id = req.params.id
 
     try {
-        const user = await User.findOne({ _id: id })
+        let user = await User.findOne({ id_colaborador: id })
 
         if (!user) {
-            res.status(422).json({ message: 'Usuário não encontrado!' })
-            return
+            user = await User.findOne({ id: id })
+            if (!user) {
+                res.status(422).json({ message: 'Usuário não encontrado!' })
+                return
+            }
         }
 
         res.status(200).json(user)

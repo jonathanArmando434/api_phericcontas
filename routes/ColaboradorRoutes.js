@@ -9,6 +9,8 @@ router.get('/', Colaborador.findAll)
 
 router.get('/:id', Colaborador.findOne)
 
+router.get('/search/:query', Colaborador.findOneByBIorName)
+
 router.patch('/:id', Colaborador.update)
 
 router.delete('/:id', Colaborador.remove)

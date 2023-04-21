@@ -60,10 +60,10 @@ exports.findMany = async (req, res) => {
     const id = req.params.id
 
     try {
-        let localizacao = await Localizacao.findMany({ _id: id })
+        let localizacao = await Localizacao.findOne({ _id: id })
 
         if (!localizacao) {
-            localizacao = await Localizacao.findMany({id_cliente: ids})
+            localizacao = await Localizacao.findOne({ id_cliente: id })
             if (!localizacao) {
                 res.status(422).json({ message: 'Localização não encontrado!' })
                 return

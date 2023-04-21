@@ -6,7 +6,7 @@ const TarefaSchema = new mongoose.Schema({
     data_limite: { type: Date, require: true },
     data_fim: Date,
     valor: {type: Number, require: true},
-    status: {type: Boolean, require: true, default: true},
+    status: {type: String, require: true, default: 'Em progresso'},
     id_cliente: { type: String, require: true },
     id_responsavel: { type: String, require: true },
     criado_em: {type: Date, require: true},

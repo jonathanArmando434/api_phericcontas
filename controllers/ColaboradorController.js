@@ -61,13 +61,9 @@ exports.create = async (req, res) => {
     try {
         const file = req.file || '';
 
-        console.log(req)
-
         const birthDate = new Date(data_nasc)
 
-        const auxIdioma = removeValueEmpty(idioma)
-
-        const colaborador = { nome, num_bi, num_iban, data_nasc: birthDate, genero, foto_url: file.path, cargo, idioma: auxIdioma }
+        const colaborador = { nome, num_bi, num_iban, data_nasc: birthDate, genero, foto_url: file.path, cargo, idioma }
 
         const result = await Colaborador.create(colaborador)
         res.status(201).json({ message: 'Colaborador inserido no sistema com sucesso!', result })
@@ -108,6 +104,26 @@ exports.findOne = async (req, res) => {
     }
 }
 
+exports.findOneByBIorName = async (req, res) => {
+    const id = req.params.query
+
+    try {
+        let colaborador = await Colaborador.find({ num_bi: query})
+        if (!colaborador) {
+            colaborador = await Colaborador.find({ nome: query})
+            if (!colaborador) {
+                res.json({ message: 'Colaborador não encontrado!' })
+                return
+            }
+        }
+
+        res.status(200).json(colaborador)
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: 'Houve um erro no servidor!' })
+    }
+}
+
 exports.update = async (req, res) => {
     const id = req.params.id
 
@@ -123,9 +139,7 @@ exports.update = async (req, res) => {
 
         const atualizado_em = new Date()
 
-        const auxIdioma = removeValueEmpty(idioma)
-
-        const newColaborador = { _id: colaborador._id, nome, num_iban, cargo, idioma: auxIdioma, atualizado_em }
+        const newColaborador = { nome, num_iban, cargo, idioma, atualizado_em }
 
         const updateColaborador = await Colaborador.updateOne({ _id: id }, newColaborador)
 

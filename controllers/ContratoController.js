@@ -116,7 +116,7 @@ exports.update = async (req, res) => {
         const endDate = new Date(data_fim)
         const atualizado_em = new Date()
 
-        const newContrato = { _id: contrato._id, data_inicio: startDate, data_fim: endDate, status, atualizado_em }
+        const newContrato = { data_inicio: startDate, data_fim: endDate, status, atualizado_em }
         console.log(newContrato)
 
         let updateContrato
