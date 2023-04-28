@@ -68,7 +68,7 @@ exports.findMany = async (req, res) => {
 exports.update = async (req, res) => {
     const id = req.params.id
 
-    const { servico, data_limite, data_fim, valor } = req.body
+    const { servico, data_limite, data_fim, valor, status } = req.body
 
     try {
         const tarefa = await Tarefa.findOne({ _id: id })
@@ -78,9 +78,13 @@ exports.update = async (req, res) => {
             return
         }
 
-        const newTarefa = { servico, data_limite, data_fim, valor, atualizado_em: new Date() }
+        const newTarefa = (
+            data_fim ?
+                { servico, data_limite, data_fim, valor, status, atualizado_em: new Date() } :
+                { servico, data_limite, valor, status, atualizado_em: new Date() }
+        )
 
-        Tarefa.updateOne({ _id: id }, newTarefa)
+        const updated = await Tarefa.updateOne({ _id: id }, newTarefa)
 
         res.status(200).json({ message: 'Tarefa atualizada com sucesso!' })
     } catch (error) {
