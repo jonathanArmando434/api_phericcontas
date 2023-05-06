@@ -1,8 +1,9 @@
 const fs = require('fs')
 const Colaborador = require("../models/ColaboradorModel");
+const User = require('../models/UserModel')
 
 const colaboradorExist = async (num_bi) => {
-    let result = await Colaborador.findOne({ num_bi: num_bi })
+    const result = await Colaborador.findOne({ num_bi: num_bi })
     if (result) {
         return true
     }
@@ -25,7 +26,16 @@ const removeValueEmpty = (array) => {
 }
 
 exports.create = async (req, res) => {
-    const { nome, num_bi, data_nasc, genero, num_iban, cargo, idioma } = req.body
+    const {
+        nome,
+        num_bi,
+        data_nasc,
+        genero,
+        num_iban,
+        nivel_academico,
+        cargo,
+        idioma
+    } = req.body
 
     if (!nome) {
         res.status(422).json({ message: 'O nome é obrigatório1' })
@@ -63,7 +73,17 @@ exports.create = async (req, res) => {
 
         const birthDate = new Date(data_nasc)
 
-        const colaborador = { nome, num_bi, num_iban, data_nasc: birthDate, genero, foto_url: file.path, cargo, idioma }
+        const colaborador = {
+            nome,
+            num_bi,
+            num_iban,
+            nivel_academico,
+            data_nasc: birthDate,
+            genero,
+            foto_url: file.path,
+            cargo,
+            idioma
+        }
 
         const result = await Colaborador.create(colaborador)
         res.status(201).json({ message: 'Colaborador inserido no sistema com sucesso!', result })
@@ -77,12 +97,12 @@ exports.create = async (req, res) => {
 
 exports.findAll = async (req, res) => {
     try {
-        const colaborador = await Colaborador.find()
+        const colaborador = await Colaborador.find().sort({ criado_em: -1 })
 
         res.status(200).json(colaborador)
     } catch (error) {
         console.log(error)
-        res.satus(500).json({ message: 'Não é possível apresentar os colaboadores!' })
+        res.status(500).json({ message: 'Houve um erro no servidor!' })
     }
 }
 
@@ -93,7 +113,7 @@ exports.findOne = async (req, res) => {
         const colaborador = await Colaborador.findOne({ _id: id })
 
         if (!colaborador) {
-            res.json({ message: 'Colaborador não encontrado!' })
+            res.status(404).json({ message: 'Colaborador não encontrado!' })
             return
         }
 
@@ -104,15 +124,16 @@ exports.findOne = async (req, res) => {
     }
 }
 
-exports.findOneByBIorName = async (req, res) => {
-    const id = req.params.query
+exports.search = async (req, res) => {
+    const query = req.params.query
 
     try {
-        let colaborador = await Colaborador.find({ num_bi: query})
-        if (!colaborador) {
-            colaborador = await Colaborador.find({ nome: query})
-            if (!colaborador) {
-                res.json({ message: 'Colaborador não encontrado!' })
+        let colaborador = await Colaborador.find({ num_bi: query }).sort({ criado_em: -1 })
+
+        if (Object.keys(colaborador).length === 0) {
+            colaborador = await Colaborador.find({ nome: { $regex: query, $options: "i" } }).sort({ criado_em: -1 });
+            if (Object.keys(colaborador) === 0) {
+                res.status(404).json({ message: 'Colaborador não encontrado!' })
                 return
             }
         }
@@ -127,23 +148,60 @@ exports.findOneByBIorName = async (req, res) => {
 exports.update = async (req, res) => {
     const id = req.params.id
 
-    const { nome, num_iban, cargo, idioma } = req.body
+    const { nome, num_iban, nivel_academico, cargo, idioma } = req.body
 
     try {
         const colaborador = await Colaborador.findOne({ _id: id })
 
         if (!colaborador) {
-            res.json({ message: 'Colaborador não encontrado!' })
+            res.status(404).json({ message: 'Colaborador não encontrado!' })
             return
         }
 
         const atualizado_em = new Date()
 
-        const newColaborador = { nome, num_iban, cargo, idioma, atualizado_em }
+        const newColaborador = { nome, num_iban, nivel_academico, cargo, idioma, atualizado_em }
 
         const updateColaborador = await Colaborador.updateOne({ _id: id }, newColaborador)
 
-        res.status(200).json({message: 'Colaborador atualizado com sucesso!', result: {...updateColaborador, _id: colaborador._id}})
+        if (cargo !== colaborador.cargo) {
+            const user = await User.findOne({ id_colaborador: id })
+            if (user) {
+                const access = (cargo === 'PCA' || cargo === 'Gerente') ? 'total' : 'restrito'
+                user.access = access
+                await user.save()
+            }
+        }
+
+        res.status(200).json({ message: 'Colaborador atualizado com sucesso!', result: { ...updateColaborador, _id: colaborador._id } })
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })
+    }
+}
+
+exports.updatePhoto = async (req, res) => {
+    const id = req.params.id
+
+    const file = req.file || '';
+
+    try {
+        const colaborador = await Colaborador.findOne({ _id: id })
+
+        if (!colaborador) {
+            res.status(404).json({ message: 'Colaborador não encontrado!' })
+            return
+        }
+
+        if (colaborador.foto_url) fs.unlinkSync(colaborador.foto_url);
+
+        const atualizado_em = new Date()
+
+        const newColaborador = { foto_url: file.path }
+
+        const updateColaborador = await Colaborador.updateOne({ _id: id }, newColaborador)
+
+        res.status(200).json({ message: 'Colaborador atualizado com sucesso!', result: { ...updateColaborador, _id: colaborador._id } })
     } catch (error) {
         console.log(error)
         res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })
@@ -156,7 +214,7 @@ exports.remove = async (req, res) => {
     const colaborador = await Colaborador.findOne({ _id: id })
 
     if (!colaborador) {
-        res.json({ message: 'Colaborador não encontrado!' })
+        res.status(404).json({ message: 'Colaborador não encontrado!' })
         return
     }
 
@@ -167,6 +225,6 @@ exports.remove = async (req, res) => {
 
         res.status(200).json({ message: 'Colaborador removido com sucesso!' })
     } catch (error) {
-        res.satus(500).json({ erro: error })
+        res.status(500).json({ erro: error })
     }
 }

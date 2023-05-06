@@ -1,4 +1,5 @@
 const User = require("../models/UserModel")
+const ContatoColaborador = require('../models/ContatoColaboradorModel')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
@@ -15,7 +16,8 @@ exports.loginMiddleware = async (req, res, next) => {
     }
 
     try {
-        const user = await User.findOne({ email: email })
+        const contatoColaborador = await ContatoColaborador.findOne({ email: email })
+        const user = await User.findOne({ id_colaborador: contatoColaborador.id_colaborador })
 
         if (!user){
             res.status(406).json({ message: 'Verifica o seu E-mail!' })

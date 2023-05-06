@@ -64,7 +64,7 @@ exports.create = async (req, res) => {
 
 exports.findAll = async (req, res) => {
     try {
-        const contrato = await Contrato.find()
+        const contrato = await Contrato.find().sort({criado_em: -1})
 
         res.status(200).json(contrato)
     } catch (error) {

@@ -7,6 +7,30 @@ const verifyIdCliente = async (id_cliente) => {
     return false
 }
 
+const existLocal = async (endereco, id_cliente) => {
+    const result = await Localizacao.find({
+        $and: [
+            { endereco: endereco },
+            { id_cliente: id_cliente },
+        ],
+    });
+    console.log(result + ' - existLocal')
+    if (Object.keys(result).length !== 0) return true
+    return false
+}
+
+const alreadyHasPrincipal = async (isPrincipal, id_cliente) => {
+    const result = await Localizacao.find({
+        $and: [
+            { isPrincipal: isPrincipal },
+            { id_cliente: id_cliente },
+        ],
+    });
+    console.log(result + ' - alreadyHasPrincipal')
+    if (Object.keys(result).length !== 0) return true
+    return false
+}
+
 exports.create = async (req, res) => {
     const { endereco, isPrincipal, id_cliente } = req.body
 
@@ -30,6 +54,16 @@ exports.create = async (req, res) => {
     const verified = await verifyIdCliente(id_cliente)
     if (!verified) {
         res.status(406).json({ message: 'O ID do cliente especificado não existe!' })
+        return
+    }
+
+    if ((await existLocal(endereco, id_cliente))) {
+        res.status(406).json({ message: 'Este endereço já foi cadastrado!' })
+        return
+    }
+
+    if ((await alreadyHasPrincipal(isPrincipal, id_cliente))) {
+        res.status(406).json({ message: 'Já foi cadastrado um endereço principal!' })
         return
     }
 
@@ -60,11 +94,11 @@ exports.findMany = async (req, res) => {
     const id = req.params.id
 
     try {
-        let localizacao = await Localizacao.findOne({ _id: id })
+        let localizacao = await Localizacao.find({ _id: id })
 
-        if (!localizacao) {
-            localizacao = await Localizacao.findOne({ id_cliente: id })
-            if (!localizacao) {
+        if (Object.keys(localizacao).length === 0) {
+            localizacao = await Localizacao.find({ id_cliente: id })
+            if (Object.keys(localizacao).length === 0) {
                 res.status(422).json({ message: 'Localização não encontrado!' })
                 return
             }
@@ -80,27 +114,19 @@ exports.findMany = async (req, res) => {
 exports.update = async (req, res) => {
     const id = req.params.id
 
-    const { endereco, isPrincipal, id_cliente } = req.body
+    const { endereco, isPrincipal } = req.body
 
     try {
-        let localizacao = await Localizacao.findOne({ _id: id })
+        const localizacao = await Localizacao.findOne({ _id: id })
 
-        let isPrincipal = true
-
-        if (!localizacao) {
-            localizacao = await Localizacao.findOne({ id_cliente: id })
-            if (!localizacao) {
-                res.status(422).json({ message: 'Localização não encontrado!' })
-                return
-            }
-            isPrincipal = false
+        if (Object.keys(localizacao).length === 0) {
+            res.status(422).json({ message: 'Localização não encontrado!' })
+            return
         }
 
         const newLocalizacao = { endereco, isPrincipal, atualizado_em: new Date() }
 
-        let updated
-        if (isPrincipal) updated = await Localizacao.updateOne({ _id: id }, newLocalizacao)
-        else updated = await Localizacao.updateOne({ id_cliente: id }, newLocalizacao)
+        const updated = await Localizacao.updateOne({ _id: id }, newLocalizacao)
 
         res.status(200).json({ message: 'Localização atualizada com sucesso!', result: { ...updated, _id: localizacao._id } })
     } catch (error) {
@@ -114,7 +140,7 @@ exports.remove = async (req, res) => {
 
     const localizacao = await Localizacao.findOne({ _id: id })
 
-    if (!localizacao) {
+    if (Object.keys(localizacao).length === 0) {
         res.status(422).json({ message: 'Localização não encontrado!' })
         return
     }

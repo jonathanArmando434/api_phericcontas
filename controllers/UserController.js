@@ -1,21 +1,13 @@
 const User = require("../models/UserModel");
 const Colaborador = require("../models/ColaboradorModel");
 const bcrypt = require('bcrypt');
-const validator = require("email-validator");
 const passwordValidator = require('password-validator');
 
-const userExist = async (email, id_colaborador, res) => {
-    let result = await User.findOne({ email: email })
+const userExist = async (id_colaborador, res) => {
+    const result = await User.findOne({ id_colaborador: id_colaborador })
     if (result) {
-        res.status(406).json({ message: 'Este e-mail já foi usado!' })
+        res.status(406).json({ message: 'Já foi cadastrado um usuário com este ID!' })
         return true
-    }
-    else {
-        result = await User.findOne({ id_colaborador: id_colaborador })
-        if (result) {
-            res.status(406).json({ message: 'Já foi cadastrado um usuário com este ID!' })
-            return true
-        }
     }
     return false
 }
@@ -44,12 +36,7 @@ const verifyIdColaborador = async (id_colaborador) => {
     return false
 }
 
-const verifyDatas = async (email, password, id_colaborador, req, res) => {
-    if (!validator.validate(email)) {
-        res.status(406).json({ message: 'E-mail inválido' })
-        return false
-    }
-
+const verifyDatas = async (password, id_colaborador, req, res) => {
     if (!verifyPassword(password)) {
         res.status(406).json({
             message: 'A Palavra passe deve ter entre 12 à 100 caracteres, deve ter letras maiúsculas e minúsculas, deve conter pelomenos um dígito e não deve ter spaços em branco!'
@@ -69,30 +56,22 @@ const generateAccess = async (id_colaborador) => {
 }
 
 exports.create = async (req, res) => {
-    const { email, password, confirmPassword, id_colaborador } = req.body
+    const { password, id_colaborador } = req.body
 
-    if (!email) {
-        res.status(422).json({ message: 'O email é obrigatório!' })
-        return
-    }
-    if (!password) {
-        res.status(422).json({ message: 'A palavra-passe é obrigatório!' })
-        return
-    }
-    if (!confirmPassword) {
-        res.status(422).json({ message: 'As palavras-passe precisam ser iguais' })
-        return
-    }
     if (!id_colaborador) {
         res.status(422).json({ message: 'O ID do calabotrador é obrigatório!' })
         return
     }
 
+    if (!password) {
+        res.status(422).json({ message: 'A palavra-passe é obrigatório!' })
+        return
+    }
 
-    const alreadyExist = await userExist(email, id_colaborador, res)
+    const alreadyExist = await userExist(id_colaborador, res)
     if (alreadyExist) return
 
-    const isOk = await verifyDatas(email, password, id_colaborador, res)
+    const isOk = await verifyDatas(password, id_colaborador, res)
     if (!isOk) return
 
     try {
@@ -101,7 +80,7 @@ exports.create = async (req, res) => {
         const salt = await bcrypt.genSalt(12)
         const passwordHash = await bcrypt.hash(password, salt)
 
-        const user = { email, password: passwordHash, access, id_colaborador }
+        const user = { password: passwordHash, access, id_colaborador }
 
         const userCreated = await User.create(user)
 
@@ -116,17 +95,17 @@ exports.create = async (req, res) => {
     } catch (err) {
         console.log(err)
         res.status(500).json({ message: 'Houve um erro no servidor, tenta novamente!' })
-        return
     }
 }
 
 exports.findAll = async (req, res) => {
     try {
-        const user = await User.find()
+        const user = await User.find().sort({criado_em: -1})
 
         res.status(200).json(user)
     } catch (error) {
-        res.status(500).json({ erro: error })
+        console.log(error)
+        res.status(500).json({ message: 'Houve um erro no servidor, tenta novamente!' })
     }
 }
 
@@ -137,7 +116,7 @@ exports.findOne = async (req, res) => {
         let user = await User.findOne({ id_colaborador: id })
 
         if (!user) {
-            user = await User.findOne({ id: id })
+            user = await User.findOne({ _id: id })
             if (!user) {
                 res.status(422).json({ message: 'Usuário não encontrado!' })
                 return
@@ -146,16 +125,15 @@ exports.findOne = async (req, res) => {
 
         res.status(200).json(user)
     } catch (error) {
-        res.status(500).json({ erro: error })
+        console.log(error)
+        res.status(500).json({ message: 'Houve um erro no servidor, tenta novamente!' })
     }
 }
 
 exports.update = async (req, res) => {
     const id = req.params.id
 
-    const { email, password, id_colaborador } = req.body
-
-    const officialAccess = Number(access)
+    const { password } = req.body
 
     try {
         const user = await User.findOne({ _id: id })
@@ -165,13 +143,17 @@ exports.update = async (req, res) => {
             return
         }
 
-        const newUser = { email, password, id_colaborador, criado_em: user.criado_em }
+        const salt = await bcrypt.genSalt(12)
+        const passwordHash = await bcrypt.hash(password, salt)
 
-        User.updateOne({ _id: id }, newUser)
+        const newUser = { password: passwordHash, atualizado_em: new Date() }
 
-        res.status(200).json(newUser)
+        await User.updateOne({ _id: id }, newUser)
+
+        res.status(200).json({ message: 'Usuário atualizado com sucesso!' })
     } catch (error) {
-        res.status(500).json({ erro: error })
+        console.log(error)
+        res.status(500).json({ message: 'Houve um erro no servidor, tenta novamente!' })
     }
 }
 
@@ -190,6 +172,7 @@ exports.remove = async (req, res) => {
 
         res.status(200).json({ message: 'Usuário removido com sucesso!' })
     } catch (error) {
-        res.status(500).json({ erro: error })
+        console.log(error)
+        res.status(500).json({ message: 'Houve um erro no servidor, tenta novamente!' })
     }
 }

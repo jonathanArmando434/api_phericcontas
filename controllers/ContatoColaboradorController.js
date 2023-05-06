@@ -1,10 +1,20 @@
+const validator = require("email-validator");
 const ContatoColaborador = require("../models/ContatoColaboradorModel");
 const Colaborador = require("../models/ColaboradorModel");
-const { exists } = require("../models/ColaboradorModel");
 
-const contatoExist = async (id_colaborador) => {
-    const result = await ContatoColaborador.findOne({ id_colaborador: id_colaborador })
-    if (result) return true
+const contatoExist = async (email, id_colaborador, res) => {
+    let result = await ContatoColaborador.findOne({ email: email })
+    if (result) {
+        res.status(406).json({ message: 'Este e-mail já foi usado!' })
+        return true
+    }
+    else {
+        result = await ContatoColaborador.findOne({ id_colaborador: id_colaborador })
+        if (result) {
+            res.status(406).json({ message: 'Já foi cadastrado um usuário com este ID!' })
+            return true
+        }
+    }
     return false
 }
 
@@ -31,13 +41,17 @@ const removeSamevalue = (array) => {
 }
 
 exports.create = async (req, res) => {
-    const { telefone, endereco, id_colaborador } = req.body
+    const { telefone, email, endereco, id_colaborador } = req.body
 
     const auxTelefone = removeEmptyValue(telefone)
 
     if (!auxTelefone || auxTelefone.length === 0) {
         res.status(422).json({ message: 'O telefone / whatsApp é obrigatório!' })
         return
+    }
+    if (!validator.validate(email)) {
+        res.status(406).json({ message: 'E-mail inválido' })
+        return false
     }
     if (!id_colaborador) {
         res.status(422).json({ message: 'O ID do calabotrador é obrigatório!' })
@@ -50,14 +64,11 @@ exports.create = async (req, res) => {
         return
     }
 
-    const exist = await contatoExist(id_colaborador)
-    if (exist) {
-        res.status(406).json({ message: 'Já foi cadastrado um contato com este ID!' })
-        return
-    }
+    const exist = await contatoExist(email, id_colaborador, res)
+    if (exist) return
 
     try {
-        const contatoColaborador = { telefone, endereco, id_colaborador }
+        const contatoColaborador = { telefone: auxTelefone, email, endereco, id_colaborador }
 
         const result = await ContatoColaborador.create(contatoColaborador)
 
@@ -72,7 +83,7 @@ exports.create = async (req, res) => {
 
 exports.findAll = async (req, res) => {
     try {
-        const contatoColaborador = await ContatoColaborador.find()
+        const contatoColaborador = await ContatoColaborador.find().sort({criado_em: -1})
 
         res.status(200).json(contatoColaborador)
     } catch (error) {
@@ -105,7 +116,7 @@ exports.findOne = async (req, res) => {
 exports.update = async (req, res) => {
     const id = req.params.id
 
-    const { telefone, endereco } = req.body
+    const { telefone, email, endereco } = req.body
 
     let isPrimary = true
 
@@ -126,7 +137,7 @@ exports.update = async (req, res) => {
 
         const atualizado_em = new Date()
 
-        const contatoColaborador = { telefone: auxTelefone, endereco, atualizado_em }
+        const contatoColaborador = { telefone: auxTelefone, email, endereco, atualizado_em }
 
         let updateContatoColaborador
         if (isPrimary) updateContatoColaborador = await ContatoColaborador.updateOne({ _id: id }, contatoColaborador)

@@ -8,6 +8,12 @@ const contatoExist = async (id_cliente) => {
     return false
 }
 
+const alreadyHasThisEmail = async (email) => {
+    const result = await ContatoCliente.findOne({ email: email })
+    if (result) return true
+    return false
+}
+
 const verifyIdClient = async (id_cliente) => {
     const result = await Cliente.findById(id_cliente)
     if (result) return true
@@ -31,7 +37,7 @@ const removeSamevalue = (array) => {
 }
 
 exports.create = async (req, res) => {
-    const { telefone, email, id_cliente } = req.body
+    const { telefone, email, id_cliente, localizacao } = req.body
 
     const auxTelefone = removeEmptyValue(telefone)
 
@@ -60,6 +66,12 @@ exports.create = async (req, res) => {
         res.status(406).json({ message: 'O ID do cliente especificado não existe!' })
         return
     }
+    
+    const already = await alreadyHasThisEmail(email)
+    if (already) {
+        res.status(406).json({ message: 'Já foi cadastrado um contato com este E-mail!' })
+        return
+    }
 
     const exist = await contatoExist(id_cliente)
     if (exist) {
@@ -67,7 +79,7 @@ exports.create = async (req, res) => {
         return
     }
 
-    const contatoCliente = { telefone: auxTelefone, email, id_cliente }
+    const contatoCliente = { telefone: auxTelefone, email, id_cliente, localizacao }
 
     try {
         const result = await ContatoCliente.create(contatoCliente)
@@ -81,7 +93,7 @@ exports.create = async (req, res) => {
 
 exports.findAll = async (req, res) => {
     try {
-        const contatoCliente = await ContatoCliente.find()
+        const contatoCliente = await ContatoCliente.find().sort({criado_em: -1})
 
         res.status(200).json(contatoCliente)
     } catch (error) {
@@ -94,11 +106,11 @@ exports.findOne = async (req, res) => {
     const id = req.params.id
 
     try {
-        let contatoCliente = await ContatoCliente.findOne({ _id: id })
+        let contatoCliente = await ContatoCliente.findOne({ _id: id }) || {}
 
-        if (!contatoCliente) {
+        if (Object.keys(contatoCliente).length === 0) {
             contatoCliente = await ContatoCliente.findOne({ id_cliente: id })
-            if (!contatoCliente) {
+            if (Object.keys(contatoCliente).length === 0) {
                 res.status(422).json({ message: 'Contato do cliente não encontrado!' })
                 return
             }
@@ -106,7 +118,7 @@ exports.findOne = async (req, res) => {
 
         res.status(200).json(contatoCliente)
     } catch (error) {
-        consolelog(error)
+        console.log(error)
         res.status(500).json({ message: 'Houve um erro no servidor!' })
     }
 }
@@ -114,16 +126,16 @@ exports.findOne = async (req, res) => {
 exports.update = async (req, res) => {
     const id = req.params.id
 
-    const { telefone, email } = req.body
+    const { telefone, email, localizacao } = req.body
 
     let isPrimary = true
 
     try {
-        let contato = await ContatoCliente.findOne({ _id: id })
+        let contato = await ContatoCliente.findOne({ _id: id }) || {}
 
-        if (!contato) {
-            contato = await ContatoCliente.findOne({ id_cliente: id })
-            if (!contato) {
+        if (Object.keys(contato).length === 0) {
+            contato = await ContatoCliente.findOne({ id_cliente: id }) || {}
+            if (Object.keys(contato).length === 0) {
                 res.status(422).json({ message: 'Contato não encontrado!' })
                 return
             }
@@ -136,6 +148,21 @@ exports.update = async (req, res) => {
         const atualizado_em = new Date()
 
         const contatoCliente = { telefone: auxTelefone, email, atualizado_em }
+
+        const oldLocal = contato.localizacao
+
+        for(let index = 0; index < oldLocal.length; index++){
+            const local = oldLocal[index]
+            const newLocal = localizacao[index]
+            local.endereco = newLocal.endereco
+            local.isPrincipal = newLocal.isPrincipal
+            await ContatoCliente.updateOne({ 'localizacao._id': local._id }, { $set: { 'localizacao.$': local } });
+        }
+
+        for (let i = oldLocal.length; i < localizacao.length; i++) {
+            contato.localizacao.push(localizacao[i])
+            await contato.save()
+        }
 
         let updateContatoCliente
         if (isPrimary) updateContatoCliente = await ContatoCliente.updateOne({ _id: id }, contatoCliente)
@@ -154,12 +181,43 @@ exports.update = async (req, res) => {
     }
 }
 
+exports.updateLocation = async (req, res) => {
+    const { id, localID } = req.params
+
+    const contatoCliente = await ContatoCliente.findOne({ _id: id })
+
+    if (Object.keys(contatoCliente).length === 0) {
+        res.status(422).json({ message: 'Contato do cliente não encontrado!' })
+        return
+    }
+
+    const local = contatoCliente.localizacao.find(loc => loc._id == localID);
+
+    if (!local) {
+        res.status(422).json({ message: 'Localização do cliente não encontrado!' })
+        return
+    }
+
+    try {
+        for (const loc of contatoCliente.localizacao) {
+            if (loc._id == localID) loc.isPrincipal = true
+            else loc.isPrincipal = false
+            await contatoCliente.save()
+        }
+
+        res.status(200).json({ message: 'Localização do cliente atualizado com sucesso!' })
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })
+    }
+}
+
 exports.remove = async (req, res) => {
     const id = req.params.id
 
     const contatoCliente = await ContatoCliente.findOne({ _id: id })
 
-    if (!contatoCliente) {
+    if (Object.keys(contatoCliente).length === 0) {
         res.status(422).json({ message: 'Contato do cliente não encontrado!' })
         return
     }
@@ -168,6 +226,33 @@ exports.remove = async (req, res) => {
         await ContatoCliente.deleteOne({ _id: id })
 
         res.status(200).json({ message: 'Contato do cliente removido com sucesso!' })
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })
+    }
+}
+
+exports.removeLocation = async (req, res) => {
+    const { id, localID } = req.params
+
+    const contatoCliente = await ContatoCliente.findOne({ _id: id })
+
+    if (Object.keys(contatoCliente).length === 0) {
+        res.status(422).json({ message: 'Contato do cliente não encontrado!' })
+        return
+    }
+
+    const local = contatoCliente.localizacao.find(loc => loc._id == localID);
+
+    if (!local) {
+        res.status(422).json({ message: 'Localização do cliente não encontrado!' })
+        return
+    }
+
+    try {
+        await ContatoCliente.updateOne({ _id: id }, { $pull: { localizacao: { _id: localID } } })
+
+        res.status(200).json({ message: 'Localização do cliente removido com sucesso!' })
     } catch (error) {
         console.log(error)
         res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })

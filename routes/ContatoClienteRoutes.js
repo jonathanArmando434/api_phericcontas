@@ -10,6 +10,10 @@ router.get('/:id', ContatoCliente.findOne)
 
 router.patch('/:id', ContatoCliente.update)
 
+router.patch('/:id/:localID', ContatoCliente.updateLocation)
+
+router.patch('/remove-location/:id/:localID', ContatoCliente.removeLocation)
+
 router.delete('/:id', ContatoCliente.remove)
 
 module.exports = router;

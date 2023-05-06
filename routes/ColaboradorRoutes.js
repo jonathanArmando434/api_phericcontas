@@ -9,9 +9,11 @@ router.get('/', Colaborador.findAll)
 
 router.get('/:id', Colaborador.findOne)
 
-router.get('/search/:query', Colaborador.findOneByBIorName)
+router.get('/search/:query', Colaborador.search)
 
 router.patch('/:id', Colaborador.update)
+
+router.patch('/update-photo/:id', upload.single("file"), Colaborador.updatePhoto)
 
 router.delete('/:id', Colaborador.remove)
 

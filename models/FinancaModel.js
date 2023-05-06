@@ -5,7 +5,7 @@ const FinancaSchema = new mongoose.Schema({
     data: {type: Date, require: true},
     valor: {type: Number, require: true},
     tipo: {type: String, require: true},
-    criado_em: {type: Date, require: true},
+    criado_em: {type: Date, require: true, default: new Date()},
     atualizado_em: {type: Date, require: true, default: new Date()}
 });
 

@@ -4,6 +4,7 @@ const ColaboradorSchema = new mongoose.Schema({
     nome: { type: String, require: true },
     num_bi: { type: String, require: true },
     num_iban: {type: String, require: true},
+    nivel_academico: {type: String, require: true},
     data_nasc: { type: Date, require: true },
     genero: { type: String, require: true },
     foto_url: String,

@@ -3,24 +3,26 @@ const Financa = require("../models/FinancaModel");
 exports.create = async (req, res) => {
     const { desc, data, valor, tipo } = req.body
 
-    const dado = { desc, data, valor, tipo, criado_em: new Data() }
+    const dado = { desc, data, valor, tipo }
 
     try {
         await Financa.create(dado)
 
         res.status(201).json({ message: 'Dado de Finança inserido no sistema com sucesso!' })
     } catch (error) {
-        res.status(500).json({ erro: error })
+        res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })
+        console.log(error)
     }
 }
 
 exports.findAll = async (req, res) => {
     try {
-        const dado = await Financa.find()
+        const dado = await Financa.find().sort({criado_em: -1})
 
         res.status(200).json(dado)
     } catch (error) {
-        res.status(500).json({ erro: error })
+        res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })
+        console.log(error)
     }
 }
 
@@ -37,7 +39,8 @@ exports.findOne = async (req, res) => {
 
         res.status(200).json(dado)
     } catch (error) {
-        res.status(500).json({ erro: error })
+        res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })
+        console.log(error)
     }
 }
 
@@ -54,13 +57,14 @@ exports.update = async (req, res) => {
             return
         }
 
-        const newDado = { desc, data, valor, tipo, criado_em: dado.criado_em }
+        const newDado = { desc, data, valor, tipo, atualizado_em: new Date() }
 
-        Financa.updateOne({ _id: id }, newDado )
+        await Financa.updateOne({ _id: id }, newDado)
 
-        res.status(200).json(newDado)
+        res.status(200).json({ message: 'Dados de finança atualizados com sucesso!' })
     } catch (error) {
-        res.status(500).json({ erro: error })
+        res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })
+        console.log(error)
     }
 }
 
@@ -79,6 +83,7 @@ exports.remove = async (req, res) => {
 
         res.status(200).json({ message: 'Dado de finança removido com sucesso!' })
     } catch (error) {
-        res.status(500).json({ erro: error })
+        res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })
+        console.log(error)
     }
 }

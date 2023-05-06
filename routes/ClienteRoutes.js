@@ -9,7 +9,11 @@ router.get('/', Cliente.findAll)
 
 router.get('/:id', Cliente.findOne)
 
+router.get('/search/:query', Cliente.search)
+
 router.patch('/:id', Cliente.update)
+
+router.patch('/update-photo/:id', upload.single("file"), Cliente.updatePhoto)
 
 router.delete('/:id', Cliente.remove)
 
