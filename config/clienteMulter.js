@@ -5,7 +5,7 @@ const multer = require('multer');
 // Defina o diretório onde os arquivos serão salvos
 const currentDir = __dirname;
 const parentDir = path.dirname(currentDir);
-const uploadDirectory = path.join(parentDir, '/uploads/img/cliente');
+const uploadDirectory = path.resolve(parentDir, 'uploads', 'img', 'cliente');
 
 // Verifique se o diretório existe e, se não existir, crie-o
 if (!fs.existsSync(uploadDirectory)) {

@@ -80,7 +80,7 @@ exports.create = async (req, res) => {
             nivel_academico,
             data_nasc: birthDate,
             genero,
-            foto_url: file.path,
+            foto_url: file.path.split('/').pop(),
             cargo,
             idioma
         }
@@ -196,12 +196,16 @@ exports.updatePhoto = async (req, res) => {
         if (colaborador.foto_url) fs.unlinkSync(colaborador.foto_url);
 
         const atualizado_em = new Date()
+        const foto_url = file.path.split('/').pop()
 
-        const newColaborador = { foto_url: file.path }
+        const newColaborador = { foto_url }
 
-        const updateColaborador = await Colaborador.updateOne({ _id: id }, newColaborador)
+        await Colaborador.updateOne({ _id: id }, newColaborador)
 
-        res.status(200).json({ message: 'Colaborador atualizado com sucesso!', result: { ...updateColaborador, _id: colaborador._id } })
+        colaborador.foto_url = foto_url
+        colaborador.atualizado_em = atualizado_em
+
+        res.status(200).json({ message: 'Imagem do colaborador atualizado com sucesso!', result: { ...colaborador } })
     } catch (error) {
         console.log(error)
         res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })

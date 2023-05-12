@@ -1,9 +1,9 @@
 const Financa = require("../models/FinancaModel");
 
 exports.create = async (req, res) => {
-    const { desc, data, valor, tipo } = req.body
+    const { desc, valor, tipo } = req.body
 
-    const dado = { desc, data, valor, tipo }
+    const dado = { desc, valor, tipo }
 
     try {
         await Financa.create(dado)
@@ -47,7 +47,7 @@ exports.findOne = async (req, res) => {
 exports.update = async (req, res) => {
     const id = req.params.id
 
-    const { desc, data, valor, tipo } = req.body
+    const { desc, valor, tipo } = req.body
 
     try {
         const dado = await Financa.findOne({ _id: id })
@@ -57,7 +57,7 @@ exports.update = async (req, res) => {
             return
         }
 
-        const newDado = { desc, data, valor, tipo, atualizado_em: new Date() }
+        const newDado = { desc, valor, tipo, atualizado_em: new Date() }
 
         await Financa.updateOne({ _id: id }, newDado)
 
