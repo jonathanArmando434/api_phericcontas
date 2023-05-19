@@ -8,6 +8,8 @@ router.get('/', Financas.findAll)
 
 router.get('/:id', Financas.findOne)
 
+router.get('/annual-report/:year', Financas.annualReport)
+
 router.patch('/:id', Financas.update)
 
 router.delete('/:id', Financas.remove)

@@ -9,7 +9,7 @@ const TarefaSchema = new mongoose.Schema({
     status: {type: String, require: true, default: 'Em progresso'},
     id_cliente: { type: String, require: true },
     id_responsavel: { type: String, require: true },
-    criado_em: {type: Date, require: true},
+    criado_em: {type: Date, require: true, default: new Date()},
     atualizado_em: {type: Date, require: true, default: new Date()}
 })
 
