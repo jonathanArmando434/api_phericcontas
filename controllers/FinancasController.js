@@ -115,9 +115,9 @@ exports.annualReport = async (req, res) => {
         const percentTotal = getPercentAboutOneYearAgo(total, oneYearAgo.total) || 0
 
         res.status(200).json({
-            entrada: { value: entrada, percent: percentEntrada },
-            saida: { value: saida, percent: percentSaida },
-            total: { value: total, percent: percentTotal }
+            entrada: { qnt: entrada, percent: percentEntrada },
+            saida: { qnt: saida, percent: percentSaida },
+            total: { qnt: total, percent: percentTotal }
         })
     } catch (error) {
         console.log(error)
