@@ -8,10 +8,14 @@ const getQntYearlyTotalColStart = (contrato, year) => {
 
   contrato.forEach((con) => {
     const dataFim = con.data_fim;
+    const dataInicio = con.data_inicio;
 
-    const firstDayOfYear = new Date(year, 1, 1);
+    const firstDateOfYear = new Date(year, 1, 1);
 
-    if (dataFim.getTime() > firstDayOfYear.getTime()) {
+    if (
+      dataFim.getTime() > firstDateOfYear.getTime() &&
+      firstDateOfYear.getTime() >= dataInicio.getTime()
+    ) {
       count++;
     }
   });
@@ -24,10 +28,17 @@ const getQntYearlyTotalColEnd = (contrato, year) => {
 
   contrato.forEach((con) => {
     const dataFim = con.data_fim;
+    const dataInicio = con.data_inicio;
 
     const lastDayOfYear = new Date(year, 12, 31);
+    lastDayOfYear.setHours(0, 0, 0, 0);
+    lastDayOfYear.setDate(lastDayOfYear.getDate() + 1);
+    lastDayOfYear.setMilliseconds(lastDayOfYear.getMilliseconds() - 1);
 
-    if (dataFim.getTime() > lastDayOfYear.getTime()) {
+    if (
+      dataFim.getTime() > lastDayOfYear.getTime() &&
+      lastDayOfYear.getTime() >= dataInicio.getTime()
+    ) {
       count++;
     }
   });
@@ -37,10 +48,11 @@ const getQntYearlyTotalColEnd = (contrato, year) => {
 
 const getQntYearlyAdmission = (contrato, year) => {
   let count = 0;
+  let i = 0;
 
   contrato.forEach((con) => {
     const dataInicio = con.data_inicio;
-    const inicioYear = dataInicio.getFullYear();
+    const inicioYear = dataInicio.getFullYear().toString();
 
     if (inicioYear === year) {
       count++;
@@ -55,7 +67,7 @@ const getQntYearlyDemission = (contrato, year) => {
 
   contrato.forEach((con) => {
     const dataFim = con.data_fim;
-    const fimYear = dataFim.getFullYear();
+    const fimYear = dataFim.getFullYear().toString();
 
     if (fimYear === year) {
       count++;
@@ -76,6 +88,9 @@ const getQntMonthlyAdmission = (contrato, year) => {
     for (let mes = 0; mes < 12; mes++) {
       const primeiroDiaMes = new Date(year, mes, 1);
       const ultimoDiaMes = new Date(year, mes + 1, 0);
+      ultimoDiaMes.setHours(0, 0, 0, 0);
+      ultimoDiaMes.setDate(ultimoDiaMes.getDate() + 1);
+      ultimoDiaMes.setMilliseconds(ultimoDiaMes.getMilliseconds() - 1);
 
       if (primeiroDiaMes <= dataInicio && dataInicio <= ultimoDiaMes) {
         contagemPorMes[mes]++;
@@ -92,15 +107,18 @@ const getQntMonthlyDemission = (contrato, year) => {
 
   // Percorre cada objeto e atualiza a contagem por mês
   contrato.forEach((con) => {
-    const dataFim = con.data_fim.getTime();
+    const dataFim = con.data_fim;
 
     for (let mes = 0; mes < 12; mes++) {
-      const primeiroDiaMes = new Date(year, mes, 1).getTime();
-      const ultimoDiaMes = new Date(year, mes + 1, 0).getTime();
+      const primeiroDiaMes = new Date(year, mes, 1);
+
+      const ultimoDiaMes = new Date(year, mes + 1, 0);
+      ultimoDiaMes.setHours(0, 0, 0, 0);
+      ultimoDiaMes.setDate(ultimoDiaMes.getDate() + 1);
+      ultimoDiaMes.setMilliseconds(ultimoDiaMes.getMilliseconds() - 1);
 
       if (primeiroDiaMes <= dataFim && dataFim <= ultimoDiaMes) {
         contagemPorMes[mes]++;
-        console.log(dataFim);
       }
     }
   });
@@ -114,12 +132,13 @@ const getQntMonthlyTotalColStart = (contrato, year) => {
 
   // Percorre cada objeto e atualiza a contagem por mês
   contrato.forEach((con) => {
+    const dataInicio = con.data_inicio;
     const dataFim = con.data_fim;
 
     for (let mes = 0; mes < 12; mes++) {
       const primeiroDiaMes = new Date(year, mes, 1);
 
-      if (dataFim > primeiroDiaMes) {
+      if (dataFim > primeiroDiaMes && primeiroDiaMes >= dataInicio) {
         contagemPorMes[mes]++;
       }
     }
@@ -134,12 +153,16 @@ const getQntMonthlyTotalColEnd = (contrato, year) => {
 
   // Percorre cada objeto e atualiza a contagem por mês
   contrato.forEach((con) => {
+    const dataInicio = con.data_inicio;
     const dataFim = con.data_fim;
 
     for (let mes = 0; mes < 12; mes++) {
       const ultimoDiaMes = new Date(year, mes + 1, 0);
+      ultimoDiaMes.setHours(0, 0, 0, 0);
+      ultimoDiaMes.setDate(ultimoDiaMes.getDate() + 1);
+      ultimoDiaMes.setMilliseconds(ultimoDiaMes.getMilliseconds() - 1);
 
-      if (dataFim > ultimoDiaMes) {
+      if (dataFim > ultimoDiaMes && ultimoDiaMes >= dataInicio) {
         contagemPorMes[mes]++;
       }
     }
@@ -154,13 +177,14 @@ const getYearlyTurnover = async (contrato, year) => {
   const qntYearlyTotalColStart = getQntYearlyTotalColStart(contrato, year);
   const qntYearlyTotalColEnd = getQntYearlyTotalColEnd(contrato, year);
 
-  console.log('aqui2 - ' + qntYearlyAdmission + ' - ' + qntYearlyDemission + ' - ' + qntYearlyTotalColStart + ' - ' + qntYearlyTotalColEnd)
-
   const avgEmployees = (qntYearlyTotalColStart + qntYearlyTotalColEnd) / 2;
-  const turnovel =
-    ((qntYearlyAdmission + qntYearlyDemission) / 2 / avgEmployees) * 100 || 0;
-
-  console.log('aqui - ' + turnovel);
+  const turnovel = Math.min(
+    (
+      ((qntYearlyAdmission + qntYearlyDemission) / 2 / avgEmployees) *
+      100
+    ).toFixed("2") || 0,
+    100
+  );
 
   return turnovel;
 };
@@ -173,34 +197,31 @@ const getMonthlyTurnovel = async (contrato, year) => {
   const qntMonthlyTotalColStart = getQntMonthlyTotalColStart(contrato, year);
   const qntMonthlyTotalColEnd = getQntMonthlyTotalColEnd(contrato, year);
 
-  console.log(
-    qntMonthlyAdmission +
-      " - " +
-      qntMonthlyDemission +
-      " - " +
-      qntMonthlyTotalColStart +
-      " - " +
-      qntMonthlyTotalColEnd
-  );
-
   for (let mes = 0; mes < 12; mes++) {
     const AverageOfMember =
       (qntMonthlyTotalColStart[mes] + qntMonthlyTotalColEnd[mes]) / 2;
-    monthlyTurnover[mes] =
-      ((qntMonthlyAdmission[mes] + qntMonthlyDemission[mes]) /
-        2 /
-        AverageOfMember) *
-        100 || 0;
+    monthlyTurnover[mes] = Math.min(
+      (
+        ((qntMonthlyAdmission[mes] + qntMonthlyDemission[mes]) /
+          2 /
+          AverageOfMember) *
+        100
+      ).toFixed('2'),
+      100
+    );
   }
 
-  return monthlyTurnover;
+  const aux = monthlyTurnover.map(value => value || 0)
+
+  return aux;
 };
 
 const getTurnovel = async (colaborador, year) => {
   const id = colaborador.map((col) => col._id);
   const contrato = await Contrato.find({ id_associado: { $in: id } });
   const monthlyTurnovel = await getMonthlyTurnovel(contrato, year);
-  const yearlyTurnovel = getYearlyTurnover(contrato, year);
+  const yearlyTurnovel = await getYearlyTurnover(contrato, year);
+
   return {
     monthlyTurnovel,
     yearlyTurnovel,
@@ -219,11 +240,15 @@ const getMonthlyDemissionRate = async (colaborador, year) => {
   for (let mes = 0; mes < 12; mes++) {
     const AverageOfMember =
       (qntMonthlyTotalColStart[mes] + qntMonthlyTotalColEnd[mes]) / 2;
-    monthlyDemissionRate[mes] =
-      Math.min((qntMonthlyDemission[mes] / AverageOfMember) * 100, 100) || 0;
+    monthlyDemissionRate[mes] = Math.min(
+      ((qntMonthlyDemission[mes] / AverageOfMember) * 100).toFixed("2"),
+      100
+    );
   }
 
-  return monthlyDemissionRate;
+  const aux = monthlyDemissionRate.map(value => value || 0)
+
+  return aux;
 };
 
 const getMonthlyAdmissionRate = async (colaborador, year) => {
@@ -238,11 +263,15 @@ const getMonthlyAdmissionRate = async (colaborador, year) => {
   for (let mes = 0; mes < 12; mes++) {
     const AverageOfMember =
       (qntMonthlyTotalColStart[mes] + qntMonthlyTotalColEnd[mes]) / 2;
-    monthlyAdmissionRate[mes] =
-      Math.min((qntMonthlyAdmission[mes] / AverageOfMember) * 100, 100) || 0;
+    monthlyAdmissionRate[mes] = Math.min(
+      ((qntMonthlyAdmission[mes] / AverageOfMember) * 100).toFixed("2"),
+      100
+    );
   }
 
-  return monthlyAdmissionRate;
+  const aux = monthlyAdmissionRate.map(value => value || 0)
+
+  return aux;
 };
 
 const getAcademicLevel = (colaborador) => {
@@ -322,7 +351,7 @@ const getAgeRange = (colaborador) => {
 };
 
 const getPercent = (qnt, total) => {
-  return (qnt / total) * 100;
+  return ((qnt / total) * 100).toFixed("2");
 };
 
 const getQntMale = (colaborador) => {

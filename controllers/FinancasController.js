@@ -22,7 +22,7 @@ const getOneYearAgo = async (year) => {
 }
 
 const getPercentAboutOneYearAgo = (present, oneYearAgo) => {
-    return ((present - oneYearAgo) / oneYearAgo) * 100
+    return (((present - oneYearAgo) / oneYearAgo) * 100)
 }
 
 const getEntrada = (fin) => {
