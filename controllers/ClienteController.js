@@ -20,7 +20,7 @@ const ExistClientByNome = async (nome) => {
 exports.create = async (req, res) => {
     const { nif, nome, area_negocio } = req.body
 
-    const file = req.file || '';
+    const file = req.file;
 
     if (!nif) {
         res.status(422).json({ message: 'O NIF é obrigatório!' })
@@ -47,7 +47,7 @@ exports.create = async (req, res) => {
         return
     }
 
-    const cliente = { nif, nome, area_negocio, foto_url: file.path }
+    const cliente = { nif, nome, area_negocio, foto_url: file ? file.path : '' }
 
     try {
         const result = await Cliente.create(cliente)
@@ -141,7 +141,7 @@ exports.update = async (req, res) => {
 exports.updatePhoto = async (req, res) => {
     const id = req.params.id
 
-    const file = req.file || '';
+    const file = req.file;
 
     console.log(__dirname)
 
@@ -155,7 +155,7 @@ exports.updatePhoto = async (req, res) => {
 
         if (cliente.foto_url) fs.unlinkSync(cliente.foto_url);
 
-        const newCliente = { fotourl: file.path, atualizado_em: new Date() }
+        const newCliente = { fotourl: file ? file.path : '', atualizado_em: new Date() }
 
         const updateCliente = await Cliente.updateOne({ _id: id }, newCliente)
 

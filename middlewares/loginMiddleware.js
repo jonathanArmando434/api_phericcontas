@@ -17,6 +17,12 @@ exports.loginMiddleware = async (req, res, next) => {
 
     try {
         const contatoColaborador = await ContatoColaborador.findOne({ email: email })
+
+        if (!contatoColaborador){
+            res.status(406).json({ message: 'Verifica o seu E-mail!' })
+            return
+        }
+
         const user = await User.findOne({ id_colaborador: contatoColaborador.id_colaborador })
 
         if (!user){

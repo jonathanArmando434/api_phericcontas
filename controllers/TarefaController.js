@@ -397,7 +397,7 @@ exports.remove = async (req, res) => {
     }
 }
 
-exports.deleteMany = async (req, res) => {
+exports.removeAll = async (req, res) => {
     try {
         await Tarefa.deleteMany({})
         res.status(500).json({ message: 'Tarefas removidas com sucesso!' })

@@ -18,6 +18,6 @@ router.patch('/:id', Tarefa.update)
 
 router.delete('/:id', Tarefa.remove)
 
-router.delete('/delete/all', Tarefa.deleteMany)
+router.delete('/delete/all', Tarefa.removeAll)
 
 module.exports = router;
