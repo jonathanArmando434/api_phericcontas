@@ -18,11 +18,11 @@ const colaborador = require('./routes/ColaboradorRoutes')
 const contrato = require('./routes/ContratoRoutes')
 const contatoCliente = require('./routes/ContatoClienteRoutes')
 const contatoColaborador = require('./routes/ContatoColaboradorRoutes')
-// const localizacao = require('./routes/LocalizacaoRoutes')
 const tarefa = require('./routes/TarefaRoutes')
 const user = require('./routes/UserRoutes')
 const financas = require('./routes/FinancasRoutes')
 const login = require('./routes/LoginRoutes')
+const public = require('./routes/PublicRoutes')
 
 app.use(helmet())
 
@@ -38,12 +38,12 @@ app.use('/cliente', checkToken, cliente)
 app.use('/colaborador', checkToken, colaborador)
 app.use('/contato-colaborador', checkToken, contatoColaborador)
 app.use('/contato-cliente', checkToken, contatoCliente)
-// app.use('/localizacao', checkToken, localizacao)
 app.use('/tarefa', checkToken, tarefa)
 app.use('/usuario', user)
 app.use('/contrato', checkToken, contrato)
 app.use('/financas', checkToken, financas)
 app.use('/login', login)
+app.use('/public', public)
 
 app.on('pronto', () => {
   app.listen(port, () => {

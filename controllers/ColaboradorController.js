@@ -182,7 +182,7 @@ const getYearlyTurnover = async (contrato, year) => {
     (
       ((qntYearlyAdmission + qntYearlyDemission) / 2 / avgEmployees) *
       100
-    ).toFixed("2") || 0,
+    ).toFixed("2"),
     100
   );
 
@@ -220,7 +220,7 @@ const getTurnovel = async (colaborador, year) => {
   const id = colaborador.map((col) => col._id);
   const contrato = await Contrato.find({ id_associado: { $in: id } });
   const monthlyTurnovel = await getMonthlyTurnovel(contrato, year);
-  const yearlyTurnovel = await getYearlyTurnover(contrato, year);
+  const yearlyTurnovel = await getYearlyTurnover(contrato, year) || 0;
 
   return {
     monthlyTurnovel,
