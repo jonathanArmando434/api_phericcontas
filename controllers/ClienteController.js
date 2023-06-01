@@ -159,7 +159,7 @@ exports.updatePhoto = async (req, res) => {
 
         const updateCliente = await Cliente.updateOne({ _id: id }, newCliente)
 
-        res.status(200).json({ message: 'Cliente atualizado com sucesso!', result: { ...updateCliente, _id: cliente._id } })
+        res.status(200).json({ message: 'Logotipo do cliente atualizado com sucesso!', result: { ...updateCliente, _id: cliente._id } })
     } catch (error) {
         console.log(error)
         res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })

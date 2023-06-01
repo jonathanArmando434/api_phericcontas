@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const enviarEmail = require('../nodemailer/enviarEmail')
+const enviarEmail = require('../config/nodeMailer')
 
 exports.checkToken = async (req, res, next) => {
   const authHeader = req.headers["authorization"];
@@ -19,9 +19,9 @@ exports.checkToken = async (req, res, next) => {
 
 exports.sendEmail = async (req, res) => {
   try {
-    const { nome, email, assunto, mensagem, password, provider } = req.body;
+    const { nome, email, assunto, mensagem } = req.body;
 
-    const enviado = await enviarEmail(nome, email, assunto, mensagem, password, provider);
+    const enviado = await enviarEmail(nome, email, assunto, mensagem);
 
     if(enviado) res.status(200).json({ message: "E-mail enviado com sucesso!" });
     else res.status(401).json({ message: "Erro ao enviar o e-mail!" });

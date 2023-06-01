@@ -1,34 +1,32 @@
 const nodemailer = require("nodemailer");
 
-const emailOfCompany = process.env.EMAIL_OF_COMPANY;
-
-const enviarEmail = async (
+const email = async (
   nome,
   email,
   assunto,
   mensagem,
-  password,
-  provider
 ) => {
   try {
     // Configuração do transporte de e-mail usando o serviço SMTP
     const transporter = nodemailer.createTransport({
-      host: "smtp.ethereal.email",
+      host: "smtp.gmail.com",
       port: 587,
       secure: false, // true for 465, false for other ports
       auth: {
-        user: email,
-        pass: password,
+        user: process.env.EMAIL_PLATFORM,
+        pass: process.env.EMAIL_PLATFORM_PASSWORD,
       },
     });
 
     // Corpo do e-mail
-    const emailBody = `${mensagem}\n\nRemetente: ${nome}`;
+    const emailBody = `Remetente: ${nome}\n\nE-mail: ${email}\n\n${mensagem}`;
+
+    console.log(process.env.EMAIL_PLATFORM)
 
     // send mail with defined transport object
     const mailOptions = await transporter.sendMail({
-      from: email, // sender address
-      to: emailOfCompany, // list of receivers
+      from: process.env.EMAIL_PLATFORM, // sender address
+      to: process.env.EMAIL_OF_COMPANY, // list of receivers
       subject: assunto, // Subject line
       text: emailBody, // plain text body
     });
@@ -43,4 +41,4 @@ const enviarEmail = async (
   }
 };
 
-module.exports = enviarEmail;
+module.exports = email;

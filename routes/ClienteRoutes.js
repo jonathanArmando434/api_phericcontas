@@ -13,7 +13,7 @@ router.get('/search/:query', Cliente.search)
 
 router.patch('/:id', Cliente.update)
 
-router.patch('/update-photo/:id', upload.single("file"), Cliente.updatePhoto)
+router.patch('/update-logo/:id', upload.single("file"), Cliente.updatePhoto)
 
 router.delete('/:id', Cliente.remove)
 
