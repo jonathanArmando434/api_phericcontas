@@ -263,7 +263,9 @@ exports.annualReport = async (req, res) => {
     const oneYearAgo = getOneYearAgo(year - 1);
 
     const startYear = new Date(`${year}-01-01`);
-    const endYear = new Date(`${year + 1}-01-01`);
+
+    const endYear = new Date(`${year}-12-31`);
+    endYear.setDate(endYear.getDate() + 1);
 
     const tarefa = await Tarefa.find({
       criado_em: {
@@ -322,7 +324,9 @@ exports.annualReportAboutAssociate = async (req, res) => {
   const year = req.params.year;
 
   const startYear = new Date(`${year}-01-01`);
-  const endYear = new Date(`${year + 1}-01-01`);
+
+  const endYear = new Date(`${year}-12-31`);
+    endYear.setDate(endYear.getDate() + 1);
 
   try {
     const oneYearAgo = getOneYearAgoAboutAssociate(id, year - 1);
