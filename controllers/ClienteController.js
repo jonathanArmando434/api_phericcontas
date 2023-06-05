@@ -272,3 +272,13 @@ exports.remove = async (req, res) => {
       .json({ message: "Houve um erro no servidor, tente novamente!" });
   }
 };
+
+exports.removeAll = async (req, res) => {
+  try {
+      await Cliente.deleteMany({})
+      res.status(500).json({ message: 'Clientes removidos com sucesso!' })
+  } catch (error) {
+      console.log(error)
+      res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })
+  }
+}

@@ -14,4 +14,6 @@ router.patch('/:id', Financas.update)
 
 router.delete('/:id', Financas.remove)
 
+router.delete('/remove/all', Financas.removeAll)
+
 module.exports = router;

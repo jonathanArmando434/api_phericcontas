@@ -17,4 +17,6 @@ router.patch('/update-logo/:id', upload.single("file"), Cliente.updatePhoto)
 
 router.delete('/:id', Cliente.remove)
 
+router.delete('/remove/all', Cliente.removeAll)
+
 module.exports = router;

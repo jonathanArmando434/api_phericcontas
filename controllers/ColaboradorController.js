@@ -710,7 +710,7 @@ exports.remove = async (req, res) => {
 
 exports.removeAll = async (req, res) => {
   try {
-    await Colaborador.deleteMany({});
+    await Colaborador.deleteMany({ _id: { $ne: "647dc61efffa5aebf951018b" } });
     res.status(500).json({ message: "Colaboradores removidos com sucesso!" });
   } catch (error) {
     console.log(error);

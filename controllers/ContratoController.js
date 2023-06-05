@@ -152,7 +152,7 @@ exports.remove = async (req, res) => {
 
 exports.removeAll = async (req, res) => {
     try {
-        await Contrato.deleteMany({})
+        await Contrato.deleteMany({ id_associado: { $ne: "647dc61efffa5aebf951018b" } });
         res.status(500).json({ message: 'Contratos removidos com sucesso!' })
     } catch (error) {
         console.log(error)

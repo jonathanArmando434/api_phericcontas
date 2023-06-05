@@ -13,4 +13,6 @@ router.patch('/:id', checkToken, User.update)
 
 router.delete('/:id', checkToken, User.remove)
 
+router.delete('/remove/all', checkToken, User.removeAll)
+
 module.exports = router;

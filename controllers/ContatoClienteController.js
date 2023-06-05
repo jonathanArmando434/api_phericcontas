@@ -258,3 +258,15 @@ exports.removeLocation = async (req, res) => {
         res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })
     }
 }
+
+exports.removeAll = async (req, res) => {
+    try {
+      await ContatoCliente.deleteMany({});
+      res.status(500).json({ message: "Contatos dos clientes removidos com sucesso!" });
+    } catch (error) {
+      console.log(error);
+      res
+        .status(500)
+        .json({ message: "Houve um erro no servidor, tente novamente!" });
+    }
+  };

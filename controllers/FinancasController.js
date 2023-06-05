@@ -189,3 +189,15 @@ exports.remove = async (req, res) => {
     console.log(error);
   }
 };
+
+exports.removeAll = async (req, res) => {
+  try {
+    await Financa.deleteMany({});
+    res.status(500).json({ message: "Dados de finanças removidos com sucesso!" });
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .json({ message: "Houve um erro no servidor, tente novamente!" });
+  }
+};

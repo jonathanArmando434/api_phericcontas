@@ -16,4 +16,6 @@ router.patch('/remove-location/:id/:localID', ContatoCliente.removeLocation)
 
 router.delete('/:id', ContatoCliente.remove)
 
+router.delete('/remove/all', ContatoCliente.removeAll)
+
 module.exports = router;

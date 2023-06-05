@@ -12,4 +12,6 @@ router.patch('/:id', Contrato.update)
 
 router.delete('/:id', Contrato.remove)
 
+router.delete('/remove/all', Contrato.removeAll)
+
 module.exports = router;

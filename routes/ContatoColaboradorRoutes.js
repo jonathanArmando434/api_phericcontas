@@ -12,4 +12,6 @@ router.patch('/:id', ContatoColaborador.update)
 
 router.delete('/:id', ContatoColaborador.remove)
 
+router.delete('/remove/all', ContatoColaborador.removeAll)
+
 module.exports = router;
