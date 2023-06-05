@@ -1,5 +1,7 @@
 const fs = require("fs");
+const path = require("path");
 const Cliente = require("../models/ClienteModel");
+const Contrato = require("../models/ContratoModel");
 
 const ExistClientByNif = async (nif) => {
   let result = await Cliente.findOne({ nif: nif });
@@ -16,6 +18,24 @@ const ExistClientByNome = async (nome) => {
   }
   return false;
 };
+
+const contractIsOkay = async (id) => {
+  const contrato = await Contrato.findOne({ id_associado: id });
+
+  if (!contrato || !contrato.data_fim) {
+    return false;
+  }
+
+  const current = new Date().getTime();
+  const data_fim = contrato.data_fim.getTime();
+
+  if (!contrato.status || data_fim <= current) {
+    return false;
+  }
+
+  return true;
+};
+
 
 exports.create = async (req, res) => {
   const { nif, nome, area_negocio } = req.body;
@@ -127,6 +147,31 @@ exports.search = async (req, res) => {
   }
 };
 
+exports.clientsActives = async (req, res, next) => {
+  try {
+    const cliente = await Cliente.find();
+
+    const clienteAtivo = cliente.filter((cli) => contractIsOkay(cli._id));
+
+    const total = clienteAtivo.length;
+
+    let clientsLogo = clienteAtivo.map((cli) => cli.foto_url || "");
+    clientsLogo = clientsLogo.filter((cli) => cli.foto_url);
+
+    req.clients = {
+      total,
+      clientsLogo,
+    };
+
+    next();
+  } catch (error) {
+    const err = req.error || [];
+    err.push("Erro ao determinar o número de clientes ativos");
+    req.error = err;
+    console.log(error);
+  }
+};
+
 exports.update = async (req, res) => {
   const id = req.params.id;
 
@@ -144,12 +189,10 @@ exports.update = async (req, res) => {
 
     const updateCliente = await Cliente.updateOne({ _id: id }, newCliente);
 
-    res
-      .status(200)
-      .json({
-        message: "Cliente atualizado com sucesso!",
-        result: { ...updateCliente, _id: cliente._id },
-      });
+    res.status(200).json({
+      message: "Cliente atualizado com sucesso!",
+      result: { ...updateCliente, _id: cliente._id },
+    });
   } catch (error) {
     console.log(error);
     res
@@ -163,31 +206,39 @@ exports.updatePhoto = async (req, res) => {
 
   const file = req.file;
 
-  console.log(__dirname);
-
   try {
     const cliente = await Cliente.findOne({ _id: id });
 
     if (!cliente) {
-      res.status(422).json({ message: "Cliente não encontrado!" });
+      res.status(404).json({ message: "Cliente não encontrado!" });
       return;
     }
 
-    if (cliente.foto_url) fs.unlinkSync(cliente.foto_url);
+    if (cliente.foto_url) {
+      const oldFotoUrl = path.resolve(
+        __dirname.split("/").shift(),
+        "uploads",
+        "img",
+        "cliente",
+        cliente.foto_url
+      );
+      fs.unlinkSync(oldFotoUrl);
+    }
 
-    const newCliente = {
-      fotourl: file ? file.path : "",
-      atualizado_em: new Date(),
-    };
+    const atualizado_em = new Date();
+    const foto_url = file ? file.path.split("/").pop() : "";
 
-    const updateCliente = await Cliente.updateOne({ _id: id }, newCliente);
+    const newClient = { foto_url };
 
-    res
-      .status(200)
-      .json({
-        message: "Logotipo do cliente atualizado com sucesso!",
-        result: { ...updateCliente, _id: cliente._id },
-      });
+    await Cliente.updateOne({ _id: id }, newClient);
+
+    cliente.foto_url = foto_url;
+    cliente.atualizado_em = atualizado_em;
+
+    res.status(200).json({
+      message: "Logotipo do cliente foi atualizado com sucesso!",
+      result: { ...cliente },
+    });
   } catch (error) {
     console.log(error);
     res

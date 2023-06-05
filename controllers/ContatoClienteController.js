@@ -106,10 +106,10 @@ exports.findOne = async (req, res) => {
     const id = req.params.id
 
     try {
-        let contatoCliente = await ContatoCliente.findOne({ _id: id }) || {}
+        let contatoCliente = (await ContatoCliente.findOne({ _id: id })) || {}
 
         if (Object.keys(contatoCliente).length === 0) {
-            contatoCliente = await ContatoCliente.findOne({ id_cliente: id })
+            contatoCliente = (await ContatoCliente.findOne({ id_cliente: id })) || {}
             if (Object.keys(contatoCliente).length === 0) {
                 res.status(422).json({ message: 'Contato do cliente não encontrado!' })
                 return

@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
-const enviarEmail = require('../config/nodeMailer')
+const enviarEmail = require('../config/nodeMailer');
+
 
 exports.checkToken = async (req, res, next) => {
   const authHeader = req.headers["authorization"];
@@ -34,3 +35,18 @@ exports.sendEmail = async (req, res) => {
       });
   }
 };
+
+exports.publicInfo = async (req, res) => {
+  const err = req.error
+    if(Array.isArray(err) && err.length === 0) {
+      res.status(500).json({ message: 'Houve um erro, recarregue a página por favor!' })
+      return
+    }
+
+    res.status(200).json({
+      members: req.members,
+      clients: req.clients,
+      projetsFinished: req.projetsFinished,
+      clientsLogo: req.clientsLogo
+    })
+}

@@ -326,7 +326,7 @@ exports.annualReportAboutAssociate = async (req, res) => {
   const startYear = new Date(`${year}-01-01`);
 
   const endYear = new Date(`${year}-12-31`);
-    endYear.setDate(endYear.getDate() + 1);
+  endYear.setDate(endYear.getDate() + 1);
 
   try {
     const oneYearAgo = getOneYearAgoAboutAssociate(id, year - 1);
@@ -397,6 +397,23 @@ exports.annualReportAboutAssociate = async (req, res) => {
     res
       .status(500)
       .json({ message: "Houve um erro no servidor, tente novamente!" });
+  }
+};
+
+exports.tasksFinished = async (req, res, next) => {
+  try {
+    const tarefa = await Tarefa.find();
+
+    const qntFinished = getQntStatus(tarefa, "Finalizado");
+
+    req.projetsFinished = qntFinished
+
+    next()
+  } catch (error) {
+    const err = req.error || [];
+    err.push('Erro ao determinar o número de tarefas concluídas!')
+    req.error = err;
+    console.log(error);
   }
 };
 

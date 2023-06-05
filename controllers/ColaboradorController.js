@@ -1,7 +1,9 @@
 const fs = require("fs");
+const path = require('path')
 const Colaborador = require("../models/ColaboradorModel");
 const User = require("../models/UserModel");
 const Contrato = require("../models/ContratoModel");
+const { async } = require("regenerator-runtime");
 
 const getQntYearlyTotalColStart = (contrato, year) => {
   let count = 0;
@@ -574,6 +576,26 @@ exports.annualReport = async (req, res) => {
   }
 };
 
+exports.membersActives = async (req, res, next) => {
+  try {
+    const colaborador = await Colaborador.find();
+
+    const colaboradorAtivo = colaborador.filter((col) =>
+      contractIsOkay(col._id)
+    );
+
+    const total = colaboradorAtivo.length;
+
+    req.members = total
+
+    next()
+  } catch (error) {
+    req.error = []
+    req.error.push('Erro ao determinar o número de colaboradores ativos')
+    console.log(error)
+  }
+}
+
 exports.update = async (req, res) => {
   const id = req.params.id;
 
@@ -638,7 +660,10 @@ exports.updatePhoto = async (req, res) => {
       return;
     }
 
-    if (colaborador.foto_url) fs.unlinkSync(colaborador.foto_url);
+    if (colaborador.foto_url) {
+      const oldFotoUrl = path.resolve(__dirname.split("/").shift(), 'uploads', 'img', 'colaborador', colaborador.foto_url)
+      fs.unlinkSync(oldFotoUrl);
+    }
 
     const atualizado_em = new Date();
     const foto_url = file ? file.path.split("/").pop() : "";
@@ -651,7 +676,7 @@ exports.updatePhoto = async (req, res) => {
     colaborador.atualizado_em = atualizado_em;
 
     res.status(200).json({
-      message: "Imagem do colaborador atualizado com sucesso!",
+      message: "Foto do colaborador atualizado com sucesso!",
       result: { ...colaborador },
     });
   } catch (error) {
