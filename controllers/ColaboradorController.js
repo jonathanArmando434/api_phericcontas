@@ -1,5 +1,5 @@
 const fs = require("fs");
-const path = require('path')
+const path = require("path");
 const Colaborador = require("../models/ColaboradorModel");
 const User = require("../models/UserModel");
 const Contrato = require("../models/ContratoModel");
@@ -208,12 +208,12 @@ const getMonthlyTurnovel = async (contrato, year) => {
           2 /
           AverageOfMember) *
         100
-      ).toFixed('2'),
+      ).toFixed("2"),
       100
     );
   }
 
-  const aux = monthlyTurnover.map(value => value || 0)
+  const aux = monthlyTurnover.map((value) => value || 0);
 
   return aux;
 };
@@ -222,7 +222,7 @@ const getTurnovel = async (colaborador, year) => {
   const id = colaborador.map((col) => col._id);
   const contrato = await Contrato.find({ id_associado: { $in: id } });
   const monthlyTurnovel = await getMonthlyTurnovel(contrato, year);
-  const yearlyTurnovel = await getYearlyTurnover(contrato, year) || 0;
+  const yearlyTurnovel = (await getYearlyTurnover(contrato, year)) || 0;
 
   return {
     monthlyTurnovel,
@@ -248,7 +248,7 @@ const getMonthlyDemissionRate = async (colaborador, year) => {
     );
   }
 
-  const aux = monthlyDemissionRate.map(value => value || 0)
+  const aux = monthlyDemissionRate.map((value) => value || 0);
 
   return aux;
 };
@@ -271,7 +271,7 @@ const getMonthlyAdmissionRate = async (colaborador, year) => {
     );
   }
 
-  const aux = monthlyAdmissionRate.map(value => value || 0)
+  const aux = monthlyAdmissionRate.map((value) => value || 0);
 
   return aux;
 };
@@ -375,10 +375,16 @@ const getQntFemale = (colaborador) => {
 const contractIsOkay = async (id) => {
   const contrato = await Contrato.findOne({ id_associado: id });
 
-  const current = new Date().getTime();
-  const data_fim = contrato.data_fim && contrato.data_fim.getTime();
+  if (!contrato || !contrato.data_fim) {
+    return false;
+  }
 
-  if (!contrato.status || data_fim <= current) return false;
+  const current = new Date().getTime();
+  const data_fim = contrato.data_fim.getTime();
+
+  if (!contrato.status || data_fim <= current) {
+    return false;
+  }
 
   return true;
 };
@@ -586,15 +592,15 @@ exports.membersActives = async (req, res, next) => {
 
     const total = colaboradorAtivo.length;
 
-    req.members = total
+    req.members = total;
 
-    next()
+    next();
   } catch (error) {
-    req.error = []
-    req.error.push('Erro ao determinar o número de colaboradores ativos')
-    console.log(error)
+    req.error = [];
+    req.error.push("Erro ao determinar o número de colaboradores ativos");
+    console.log(error);
   }
-}
+};
 
 exports.update = async (req, res) => {
   const id = req.params.id;
@@ -661,7 +667,13 @@ exports.updatePhoto = async (req, res) => {
     }
 
     if (colaborador.foto_url) {
-      const oldFotoUrl = path.resolve(__dirname.split("/").shift(), 'uploads', 'img', 'colaborador', colaborador.foto_url)
+      const oldFotoUrl = path.resolve(
+        __dirname.split("/").shift(),
+        "uploads",
+        "img",
+        "colaborador",
+        colaborador.foto_url
+      );
       fs.unlinkSync(oldFotoUrl);
     }
 

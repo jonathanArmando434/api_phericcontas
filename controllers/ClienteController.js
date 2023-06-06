@@ -36,7 +36,6 @@ const contractIsOkay = async (id) => {
   return true;
 };
 
-
 exports.create = async (req, res) => {
   const { nif, nome, area_negocio } = req.body;
 

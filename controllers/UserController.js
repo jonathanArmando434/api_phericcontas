@@ -45,7 +45,7 @@ const verifyIdColaborador = async (id_colaborador) => {
   return false;
 };
 
-const verifyDatas = async (password, id_colaborador, req, res) => {
+const verifyDatas = async (password, id_colaborador, res) => {
   if (!verifyPassword(password)) {
     res.status(406).json({
       message:
