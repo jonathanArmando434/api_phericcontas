@@ -16,6 +16,9 @@ const email = async (
         user: process.env.EMAIL_PLATFORM,
         pass: process.env.EMAIL_PLATFORM_PASSWORD,
       },
+      tls: {
+        rejectunauthorized: false
+      }
     });
 
     // Corpo do e-mail
@@ -25,7 +28,7 @@ const email = async (
 
     // send mail with defined transport object
     const mailOptions = await transporter.sendMail({
-      from: process.env.EMAIL_PLATFORM, // sender address
+      from: `${nome} <${process.env.EMAIL_PLATFORM}>`, // sender address
       to: process.env.EMAIL_OF_COMPANY, // list of receivers
       subject: assunto, // Subject line
       text: emailBody, // plain text body
