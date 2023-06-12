@@ -20,6 +20,7 @@ exports.loginMiddleware = async (req, res, next) => {
 
         if (!contatoColaborador){
             res.status(406).json({ message: 'Verifica o seu E-mail!' })
+            console.log('chegou')
             return
         }
 

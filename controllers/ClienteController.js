@@ -256,10 +256,18 @@ exports.remove = async (req, res) => {
     return;
   }
 
-  console.log(cliente.foto_url);
-
   try {
-    if (cliente.foto_url) fs.unlinkSync(cliente.foto_url);
+    if (cliente.foto_url) {
+      const oldFotoUrl = path.resolve(
+        __dirname.split("/").shift(),
+        "uploads",
+        "img",
+        "cliente",
+        cliente.foto_url
+      );
+      fs.unlinkSync(oldFotoUrl);
+    }
+
 
     await Cliente.deleteOne({ _id: id });
 

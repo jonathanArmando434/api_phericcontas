@@ -215,7 +215,12 @@ exports.updateLocation = async (req, res) => {
 exports.remove = async (req, res) => {
     const id = req.params.id
 
-    const contatoCliente = await ContatoCliente.findOne({ _id: id })
+    const contatoCliente = await ContatoCliente.findOne({ 
+        $or: [
+            {_id: id},
+            {id_cliente: id}
+        ]
+     })
 
     if (Object.keys(contatoCliente).length === 0) {
         res.status(422).json({ message: 'Contato do cliente não encontrado!' })
@@ -223,7 +228,12 @@ exports.remove = async (req, res) => {
     }
 
     try {
-        await ContatoCliente.deleteOne({ _id: id })
+        await ContatoCliente.deleteOne({ 
+        $or: [
+            {_id: id},
+            {id_cliente: id}
+        ]
+     })
 
         res.status(200).json({ message: 'Contato do cliente removido com sucesso!' })
     } catch (error) {

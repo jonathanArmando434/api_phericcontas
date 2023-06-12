@@ -709,14 +709,23 @@ exports.remove = async (req, res) => {
     return;
   }
 
-  if (colaborador.foto_url) fs.unlinkSync(colaborador.foto_url);
+  if (colaborador.foto_url) {
+    const oldFotoUrl = path.resolve(
+      __dirname.split("/").shift(),
+      "uploads",
+      "img",
+      "colaborador",
+      colaborador.foto_url
+    );
+    fs.unlinkSync(oldFotoUrl);
+  }
 
   try {
     await Colaborador.deleteOne({ _id: id });
 
     res.status(200).json({ message: "Colaborador removido com sucesso!" });
   } catch (error) {
-    res.status(500).json({ erro: error });
+    res.status(500).json({ error: 'Houve um erro no servidor, tente novamente!' });
   }
 };
 

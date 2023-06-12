@@ -1,7 +1,20 @@
 const User = require("../models/UserModel");
 const Colaborador = require("../models/ColaboradorModel");
+const TokenToResetPassword = require("../models/TokenToResetPasswordModel");
 const bcrypt = require("bcrypt");
 const passwordValidator = require("password-validator");
+
+const gerarCredencialAleatoria = () => {
+  const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()';
+  const credencial = '';
+  
+  for (const i = 0; i < 10; i++) {
+    const indiceAleatorio = Math.floor(Math.random() * caracteres.length);
+    credencial += caracteres[indiceAleatorio];
+  }
+  
+  return credencial;
+}
 
 const userExist = async (id_colaborador, res) => {
   const result = await User.findOne({ id_colaborador: id_colaborador });
@@ -151,17 +164,29 @@ exports.findOne = async (req, res) => {
 };
 
 exports.update = async (req, res) => {
-  const id = req.params.id;
+  const { token } = req.params;
 
   const { password } = req.body;
 
   try {
+    const tokenDoc = await TokenToResetPassword.findOne({ token: token });
+
+    if (!tokenDoc) {
+      res.status(422).json({ message: "Permissão negada para redefinir senha!" });
+      return;
+    }
+
+    const id = tokenDoc.id_usuario
+    const email = tokenDoc.email
+
     const user = await User.findOne({ _id: id });
 
     if (!user) {
       res.status(422).json({ message: "Usuário não encontrado!" });
       return;
     }
+
+    const id_colaborador = user.id_colaborador
 
     const salt = await bcrypt.genSalt(12);
     const passwordHash = await bcrypt.hash(password, salt);
@@ -170,7 +195,9 @@ exports.update = async (req, res) => {
 
     await User.updateOne({ _id: id }, newUser);
 
-    res.status(200).json({ message: "Usuário atualizado com sucesso!" });
+    await TokenToResetPassword.deleteOne({token: token})
+
+    res.status(200).json({ message: "Palavra-passe redefinida com sucesso!", email });
   } catch (error) {
     console.log(error);
     res
@@ -192,7 +219,7 @@ exports.remove = async (req, res) => {
   try {
     await User.deleteOne({ _id: id });
 
-    res.status(200).json({ message: "Usuário removido com sucesso!" });
+    res.status(200).json({ message: "Usuário removido com sucesso!", id_colaborador });
   } catch (error) {
     console.log(error);
     res

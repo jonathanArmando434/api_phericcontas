@@ -1,10 +1,8 @@
 const nodemailer = require("nodemailer");
 
 const email = async (
-  nome,
   email,
-  assunto,
-  mensagem,
+  linkReset
 ) => {
   try {
     // Configuração do transporte de e-mail usando o serviço SMTP
@@ -18,15 +16,12 @@ const email = async (
       },
     });
 
-    // Corpo do e-mail
-    const emailBody = `Remetente: ${nome}\n\nE-mail: ${email}\n\n${mensagem}`;
-
     // send mail with defined transport object
     const mailOptions = await transporter.sendMail({
-      from: `${nome} <${process.env.EMAIL_PLATFORM}>`, // sender address
-      to: process.env.EMAIL_OF_COMPANY, // list of receivers
-      subject: assunto, // Subject line
-      text: emailBody, // plain text body
+      from: `Phericcontas <${process.env.EMAIL_PLATFORM}>`, // sender address
+      to: email, // list of receivers
+      subject: 'Recuperação de Senha',
+      text: `Olá! Você solicitou a recuperação de senha. Clique no link a seguir para criar uma nova senha: ${linkReset}`,
     });
 
     // Envia o e-mail

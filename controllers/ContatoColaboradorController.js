@@ -159,7 +159,12 @@ exports.update = async (req, res) => {
 exports.remove = async (req, res) => {
     const id = req.params.id
 
-    const contatoColaborador = await ContatoColaborador.findOne({ _id: id })
+    const contatoColaborador = await ContatoColaborador.findOne({ 
+        $or: [
+            {_id: id},
+            {id_colaborador: id}
+        ]
+     })
 
     if (!contatoColaborador) {
         res.status(422).json({ message: 'Contato do colaborador não encontrado!' })
@@ -167,9 +172,16 @@ exports.remove = async (req, res) => {
     }
 
     try {
-        await ContatoColaborador.deleteOne({ _id: id })
+        await ContatoColaborador.deleteOne({ 
+        $or: [
+            {_id: id},
+            {id_colaborador: id}
+        ]
+     })
 
         res.status(200).json({ message: 'Contato do colaborador removido com sucesso!' })
+        console.log('ok')
+
     } catch (error) {
         console.log(error)
         res.status(500).json({ message: 'Houve um erro no servidor, tente novamente!' })
