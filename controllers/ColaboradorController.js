@@ -3,6 +3,7 @@ const path = require("path");
 const Colaborador = require("../models/ColaboradorModel");
 const User = require("../models/UserModel");
 const Contrato = require("../models/ContratoModel");
+const sendMail = require('../config/nodeMailer')
 const { async } = require("regenerator-runtime");
 
 const getQntYearlyTotalColStart = (contrato, year) => {
@@ -462,6 +463,10 @@ exports.create = async (req, res) => {
       message: "Colaborador inserido no sistema com sucesso!",
       result,
     });
+
+
+    
+
     return;
   } catch (error) {
     console.log(error);
