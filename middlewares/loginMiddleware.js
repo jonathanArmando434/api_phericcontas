@@ -32,17 +32,17 @@ exports.loginMiddleware = async (req, res, next) => {
             return res.status(406).json({ message: 'Palavra-passe errada!' })
         }
 
-        const token = jwt.sign(
-            process.env.SECRET, {
-            expiresIn: "30d",
-            subject: user._id
-        })
+        const secret = process.env.SECRET
+        const token = jwt.sign({ id: user._id }, secret)
 
-        const data = {
-            token, user
+        const userDatas = {
+            id: user._id,
+            email: user.email,
+            access: user.access,
+            id_colaborador: user.id_colaborador
         }
 
-        res.status(200).json({ message: 'Autenticação realizada com sucesso!', data })
+        res.status(200).json({ message: 'Autenticação realizada com sucesso!', user: userDatas, token })
     } catch (err) {
         console.log(err)
         res.status(500).json({ message: 'Houve um erro no servidor, tenta novamente!' })
