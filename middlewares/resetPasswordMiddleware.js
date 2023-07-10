@@ -54,7 +54,7 @@ exports.recorvePassword = async (req, res) => {
       email
     });
 
-    const linkReset = `https://phericcontas.vercel.app/admin/palavra-passe/redefinir/${token}`;
+    const linkReset = `http://localhost:5173/admin/palavra-passe/redefinir/${token}`;
 
     const response = await sendEmail(email, linkReset)
 
