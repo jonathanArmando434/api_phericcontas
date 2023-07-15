@@ -22,7 +22,7 @@ const tarefa = require('./routes/TarefaRoutes')
 const user = require('./routes/UserRoutes')
 const financas = require('./routes/FinancasRoutes')
 const login = require('./routes/LoginRoutes')
-const public = require('./routes/PublicRoutes')
+const _public = require('./routes/PublicRoutes')
 
 app.use(helmet())
 
@@ -43,7 +43,7 @@ app.use('/usuario', user)
 app.use('/contrato', checkToken, contrato)
 app.use('/financas', checkToken, financas)
 app.use('/login', login)
-app.use('/public', public)
+app.use('/public', _public)
 
 app.on('pronto', () => {
   app.listen(port, () => {
